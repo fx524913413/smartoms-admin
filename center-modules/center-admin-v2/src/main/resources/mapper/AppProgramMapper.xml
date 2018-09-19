@@ -1,0 +1,24 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.adminv2.mapper.AppProgramMapper">
+    <select id="getAppProgramInfo" parameterType="map" resultType="com.zorkdata.center.adminv2.vo.AppProgramVo">
+        select s.AppSystemName, p.*, c.Type,c.Memo
+        from AppSystem s, AppProgram p, Computer c,
+        (select SrcID,DestID from ObjRelationship where SrcType='AppSystem' and
+        SrcID in
+        <foreach item="item" index="index" collection="systemid"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ) r
+        where s.AppSystemID=r.SrcID and p.AppProgramID=r.DestID and c.ComputerID=p.ComputerID
+        <if test="appprogramname != null">
+            and p.AppProgramName =#{appprogramname}
+        </if>
+        <if test="computerName != null and computerName != ''">
+            AND (p.HostName LIKE '%'+#{computerName}+'%' OR p.IPAddress LIKE '%'+#{computerName}+'%' OR p.AppProgramName LIKE '%'+#{computerName}+'%' )
+        </if>
+        order by p.AppProgramName, p.HostName
+	</select>
+</mapper>

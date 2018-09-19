@@ -1,0 +1,189 @@
+logging:
+    level:
+#        tk.mybatis: DEBUG
+        com.zorkdata.center.admin: DEBUG
+spring:
+    application:
+        name: center-admin
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: GMT+8
+        default-property-inclusion: non_null
+    datasource:
+        name: test
+        url: jdbc:mysql://${MYSQL_HOST:192.168.1.157}:${MYSQL_PORT:3306}/center_admin?useUnicode=true&characterEncoding=UTF8&useSSL=false
+        username: root
+        password: zorkdata.8888
+        # 使用druid数据源
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        filters: stat
+        maxActive: 20
+        initialSize: 1
+        maxWait: 60000
+        minIdle: 1
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: select 'x'
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        maxOpenPreparedStatements: 20
+#    rabbitmq:
+#        host: ${RABBIT_MQ_HOST:localhost}
+#        port:  ${RABBIT_MQ_PORT:5672}
+#        username: guest
+#        password: guest
+#    sleuth:
+#      sampler:
+#        percentage: 1
+
+#sample:
+#  zipkin:
+#    # When enabled=false, traces log to the console. Comment to send to zipkin
+#    enabled: false
+
+mybatis:
+    basepackage: com.zorkdata.center.admin.mapper
+    xmlLocation: classpath:mapper/**/*.xml
+    mapper-locations: "classpath*:mapper/*.xml"
+
+server:
+    port: 8762
+
+
+eureka:
+    instance:
+        statusPageUrlPath: /actuator/info
+        healthCheckUrlPath: /actuator/health
+        # docker 部署开启
+        prefer-ip-address: true
+        ip-address: 127.0.0.1
+    client:
+        serviceUrl:
+#            defaultZone: http://localhost:8761/eureka/
+                    # docker 部署开启
+            defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
+# 必须配置
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+
+ribbon:
+  eureka:
+    enabled: true
+  ReadTimeout: 120000
+  ConnectTimeout: 120000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+  OkToRetryOnAllOperations: false
+
+hystrix:
+  threadpool:
+    default:
+      coreSize: 1000 ##并发执行的最大线程数，默认10
+      maxQueueSize: 1000 ##BlockingQueue的最大队列数
+      queueSizeRejectionThreshold: 500 ##即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 110000
+
+
+# 配置swagger
+swagger:
+    enabled: true
+    base-package: com.zorkdata.center.admin
+    title: center-admin
+    version: 1.0.0.SNAPSHOT
+    description: 管理后端服务
+    contact:
+        name: admin
+
+auth:
+  serviceId: center-auth
+  user:
+    token-header: Authorization
+  client:
+    id: center-admin
+    secret: 123456
+    token-header: client-token
+
+#redis-cache 相关
+redis:
+    pool:
+         maxActive: 300
+         maxIdle: 100
+         maxWait: 1000
+    host: ${REDIS_HOST:192.168.1.95}
+    port:  ${REDIS_PORT:6379}
+#    password: ${REDIS_PASSWORD:zorkdata.8888}}
+    timeout: 2000
+    # 服务或应用名
+    sysName: center-admin
+    enable: true
+    database: 0
+# /disk01/center/smartoms-admin/release/files
+# /disk01/center/smartoms-admin/release/admin/jschchannelshellagent linux生产目录下的路径
+file:
+    path: "D:/script/"
+    script: "D:/script/"
+    yml:
+    testfile: C:\Users\X230\Desktop\filebeat.yml
+git:
+    gitpath: http://210.22.155.10:8888/File/FileCenter.git
+    localRepositoryDir: D:\GitRepository\FileCenter
+    localRepositoryConfigDir: D:\GitRepository\FileCenter\.git
+    remoteRepositoryURI: http://210.22.155.10:8888/File/FileCenter.git
+    saltPath: salt://
+    gitUser: cairuixiang
+    gitPass: cs1991118
+sh:
+    command: sh install_master4local.sh http://192.168.1.93:8762/file/download/zork-omsmaster-linux-x86_64.zip http://210.22.155.10:8888/File/FileCenter.git
+jsch:
+    file: "D:\\ideaworkspace\\smartoms-admin\\jschchannelshellagent"
+jsch2:
+    file: "D:\\ideaworkspace\\smartoms-admin\\jschchannelshell"
+    filemaster: "D:\\ideaworkspace\\smartoms-admin\\jschchannelshellmaster"
+
+shagentnotinmaster:
+    command: bash -c "$(curl -s http://192.168.1.93:8000/download/install_agent.sh)"
+
+shagentinmaster:
+                command: bash -c "$(curl -s http://192.168.1.93:8000/download/install_agent.sh)"
+icon:
+    complete: "../../../../../../../resource/img/center-front2/default/green.png"
+icon2:
+    wrong: "../../../../../../../resource/img/center-front2/default/red.png"
+
+salt:
+   URL: http://192.168.1.93:8000
+   Controller: "http://192.168.1.93:8765/api/admin/agent/getAgents"
+   UserName: salt
+   Password: zorkdata.8888
+socket:
+   Timeout: 300000
+
+agent:
+   version: 2.2&3.0
+
+bkcmdb:
+   apiserver: http://192.168.1.93:8083
+cmdb:
+   apiserver: http://192.168.1.245:8000
+
+ldap:
+   ldapHost: 127.0.0.1
+   ldapPort: 389
+   ldapBindDN: cn=Manager,dc=maxcrc,dc=com
+   ldapPassword: secret
+   root: com
+   dc: maxcrc
+   ou: zty
+   initPassword: 123456
+   open: true

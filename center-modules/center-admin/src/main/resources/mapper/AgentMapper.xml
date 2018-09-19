@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.AgentMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Agent">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="AgentID" jdbcType="BIGINT" property="agentID"/>
+        <result column="AgentName" jdbcType="VARCHAR" property="agentName"/>
+        <result column="HostName" jdbcType="VARCHAR" property="hostName"/>
+        <result column="State" jdbcType="BIGINT" property="state"/>
+        <result column="BackState" jdbcType="BIGINT" property="backState"/>
+        <result column="LastTime" jdbcType="DATE" property="lastTime"/>
+        <result column="LoginTime" jdbcType="DATE" property="loginTime"/>
+        <result column="ComputerID" jdbcType="VARCHAR" property="computerID"/>
+        <result column="Version" jdbcType="VARCHAR" property="version"/>
+        <result column="MasterID" jdbcType="BIGINT" property="masterID"/>
+        <result column="MasterBackID" jdbcType="BIGINT" property="masterBackID"/>
+        <result column="InstallationType" jdbcType="VARCHAR" property="installationType"/>
+        <result column="LastModifyTime" jdbcType="DATE" property="lastModifyTime"/>
+        <result column="CiCode" jdbcType="VARCHAR" property="ciCode"/>
+    </resultMap>
+    <delete id="deleteByComputerID" parameterType="java.lang.Long">
+        DELETE FROM Agent
+        WHERE computerID = #{computerID}
+    </delete>
+    <select id="selectByComputerID" parameterType="java.lang.Long" resultType="com.zorkdata.center.admin.entity.Agent">
+        SELECT * FROM Agent
+        WHERE computerID = #{computerID}
+    </select>
+    <select id="selectAllAgent" resultType="com.zorkdata.center.admin.entity.Agent">
+        SELECT * FROM Agent where Agent.ComputerID IS NOT NULL
+    </select>
+
+    <select id="getAllAgent" resultType="com.zorkdata.center.admin.entity.Agent">
+        select * from Agent
+    </select>
+
+    <select id="selectAgentByMasterID" parameterType="java.lang.Long"
+            resultType="com.zorkdata.center.admin.entity.Agent">
+        SELECT * FROM Agent where masterID = #{masterID}
+    </select>
+
+    <insert id="insertAgent" parameterType="com.zorkdata.center.admin.entity.Agent" useGeneratedKeys="true"
+            keyProperty="agentID">
+        INSERT INTO Agent (AgentName,State,LastTime,LoginTime,ComputerID,Version,
+        MasterID,InstallationType,LastModifyTime,MasterBackID,BackState)
+        VALUES(#{agentName},#{state},#{lastTime},#{lastTime},#{computerID},#{version},
+        #{masterID},#{installationType},#{lastModifyTime},#{masterBackID},#{backState})
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+            <if test="agentName!=null">
+                agentName=#{agentName} ,
+            </if>
+            <if test="state!=null">
+                state=#{state} ,
+            </if>
+            <if test="lastTime!=null">
+                lastTime=#{lastTime} ,
+            </if>
+            <if test="loginTime!=null">
+                loginTime=#{loginTime} ,
+            </if>
+            <if test="computerID!=null">
+                computerID=#{computerID} ,
+            </if>
+            <if test="version!=null">
+                version=#{version} ,
+            </if>
+            <if test="masterID!=null">
+                masterID=#{masterID} ,
+            </if>
+            <if test="installationType!=null">
+                installationType=#{installationType} ,
+            </if>
+            <if test="lastModifyTime!=null">
+                lastModifyTime=#{lastModifyTime} ,
+            </if>
+            <if test="masterBackID!=null">
+                masterBackID=#{masterBackID} ,
+            </if>
+            <if test="backState!=null">
+                backState=#{backState} ,
+            </if>
+        </trim>
+    </insert>
+    <delete id="deleteByComputerIds">
+        DELETE FROM Agent WHERE ComputerID IN
+        <foreach collection="computerIDlist" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+    </delete>
+    <select id="countAgentState" resultType="com.zorkdata.center.admin.vo.AgentStateSum">
+        select COUNT(*) as count,IF(State+BackState=4,2,1) as state from Agent where ComputerID IN
+        <foreach collection="computerIDlist" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+        GROUP BY IF(State+BackState=4,2,1)
+    </select>
+    <update id="updateAgent" parameterType="map">
+        update Agent
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="state!=null">
+                state=#{state},
+            </if>
+            <if test="lastTime!=null">
+                lastTime=#{lastTime},
+            </if>
+            <if test="lastModifyTime!=null">
+                lastModifyTime=#{lastModifyTime},
+            </if>
+        </trim>
+        <trim prefix="WHERE" suffixOverrides="AND">
+            <if test="agentName!=null">
+                AgentName = #{agentName} AND
+            </if>
+            <if test="masterID!=null">
+                MasterID = #{masterID} AND
+            </if>
+        </trim>
+    </update>
+
+    <update id="updateAgentState" parameterType="map">
+        update Agent
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="state!=null">
+                state=#{state},
+            </if>
+            <if test="lastTime!=null">
+                lastTime=#{lastTime},
+            </if>
+            <if test="lastModifyTime!=null">
+                lastModifyTime=#{lastModifyTime},
+            </if>
+        </trim>
+    </update>
+
+    <update id="updateAgentBack" parameterType="map">
+        update Agent
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="state!=null">
+                BackState=#{state},
+            </if>
+            <if test="lastTime!=null">
+                lastTime=#{lastTime},
+            </if>
+            <if test="lastModifyTime!=null">
+                lastModifyTime=#{lastModifyTime},
+            </if>
+        </trim>
+        <trim prefix="WHERE" suffixOverrides="AND">
+            <if test="agentName!=null">
+                AgentName = #{agentName} AND
+            </if>
+            <if test="masterID!=null">
+                MasterBackID = #{masterID} AND
+            </if>
+        </trim>
+    </update>
+
+    <update id="updateAgentBatch" parameterType="java.util.List">
+        update Agent
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="state =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.state !=null ">
+                        when AgentName=#{item.agentName} then #{item.state}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="lastTime =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.lastTime != null">
+                        when AgentName=#{item.agentName} then #{item.lastTime}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="lastModifyTime =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.lastModifyTime != null">
+                        when AgentName=#{item.agentName} then #{item.lastModifyTime}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="item" index="index">
+            AgentName=#{item.agentName}
+            <if test="item.masterID != null">
+                AND MasterID = #{item.masterID}
+            </if>
+        </foreach>
+    </update>
+
+    <update id="updateAgentBackBatch" parameterType="java.util.List">
+        update Agent
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="BackState =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.state !=null ">
+                        when AgentName=#{item.agentName} then #{item.state}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="lastTime =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.lastTime != null">
+                        when AgentName=#{item.agentName} then #{item.lastTime}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="lastModifyTime =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.lastModifyTime != null">
+                        when AgentName=#{item.agentName} then #{item.lastModifyTime}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="item" index="index">
+            AgentName=#{item.agentName}
+            <if test="item.masterID != null">
+                AND MasterBackID = #{item.masterID}
+            </if>
+        </foreach>
+    </update>
+
+    <select id="selectByAgentName" resultType="com.zorkdata.center.admin.entity.Agent">
+        SELECT * FROM Agent
+        WHERE agentName = #{agentName}
+    </select>
+
+
+    <select id="seleteAgent2Master" parameterType="java.lang.String" resultMap="api4agent">
+        SELECT CONCAT(c.IP,":",m.ApiPort,":",c.ComputerType) saltApi,a.AgentName,c.UserName,c.Password
+        FROM Agent a, Computer c, Master m
+        WHERE ((a.State >= a.BackState AND a.MasterBackID = m.MasterID ) OR (a.State  <![CDATA[ < ]]> a.BackState AND
+        a.MasterID = m.MasterID) OR (a.State = 1 AND a.MasterID = m.MasterID) )
+        AND m.ComputerID = c.ComputerID AND AgentName in
+        <foreach collection="minionIDList" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <resultMap id="api4agent" type="com.zorkdata.center.admin.entity.Agent2Master">
+        <result property="saltApi" column="saltApi"/>
+        <result property="userName" column="UserName"/>
+        <result property="password" column="Password"/>
+        <collection property="agentList" ofType="com.zorkdata.center.admin.entity.AgentName" javaType="list">
+            <result property="name" column="AgentName"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="getAgentsAndComputerByAgentID" parameterType="java.lang.Long" resultMap="reflectMap">
+        SELECT a.AgentID,a.AgentName,a.State,a.LastTime,a.LoginTime,a.ComputerID,a.Version,a.MasterID,a.InstallationType
+        ,a.LastModifyTime,a.MasterBackID,c.ComputerID,c.ComputerType,c.HostName,c.IP,c.Mac,c.HostName,c.PassWord
+        FROM Agent a, Computer c WHERE a.ComputerID = c.ComputerID AND AgentID = #{agentID}
+    </select>
+
+    <resultMap id="reflectMap" type="com.zorkdata.center.admin.vo.AgentAndComputer">
+        <association property="agent" resultMap="reflectAgent"/>
+        <association property="computer" resultMap="reflectComputer"/>
+    </resultMap>
+
+    <resultMap id="reflectAgent" type="com.zorkdata.center.admin.entity.Agent">
+        <result property="agentID" column="AgentID"/>
+        <result property="agentName" column="AgentName"/>
+        <result property="state" column="State"/>
+        <result property="lastTime" column="LastTime"/>
+        <result property="loginTime" column="LoginTime"/>
+        <result property="computerID" column="ComputerID"/>
+        <result property="version" column="Version"/>
+        <result property="masterID" column="MasterID"/>
+        <result property="installationType" column="InstallationType"/>
+        <result property="lastModifyTime" column="LastModifyTime"/>
+        <result property="masterBackID" column="MasterBackID"/>
+    </resultMap>
+
+    <resultMap id="reflectComputer" type="com.zorkdata.center.admin.entity.Computer">
+        <result property="computerID" column="ComputerID"/>
+        <result property="computerType" column="ComputerType"/>
+        <result property="hostName" column="HostName"/>
+        <result property="ip" column="IP"/>
+        <result property="mac" column="Mac"/>
+        <result property="userName" column="UserName"/>
+        <result property="password" column="Password"/>
+    </resultMap>
+
+
+    <select id="getClusterMaster4Agent" resultMap="resultMap4AgentVo4">
+    SELECT a.AgentID,a.AgentName,a.LastTime,a.LoginTime, IF(a.State<![CDATA[<=]]>a.BackState,a.State,a.BackState) AS AgentState,
+    a.ComputerID AS AgentComputerID,a.Version,a.InstallationType AS AgentInstallationType,a.LastModifyTime AS AgentLastModifyTime,
+    IF(a.State <![CDATA[<=]]>a.BackState,a.MasterID,a.MasterBackID) AS AgentMasterID ,
+    v.InstallationType,v.MasterID,v.ClusterID MasterClusterID,v.ComputerID,v.State,v.Port,v.IsMaster,v.ApiPort,
+    v.mLastModifyTime AS MasterLastModifyTime,v.ClusterName,v.ClusterID
+        FROM Agent a
+        LEFT JOIN(SELECT m.InstallationType,m.MasterID,m.ClusterID MasterClusterID,m.ComputerID,m.State,m.Port,m.IsMaster,m.ApiPort,m.LastModifyTime AS mLastModifyTime,cl.ClusterName,cl.ClusterID
+        FROM `Master` m
+        LEFT JOIN Cluster cl
+        ON m.ClusterID = cl.ClusterID) v
+        ON IF(a.State <![CDATA[<=]]>a.BackState,a.MasterID,a.MasterBackID) = v.MasterID
+        ORDER BY a.LastModifyTime DESC
+    </select>
+
+    <resultMap id="resultMap4AgentVo4" type="com.zorkdata.center.admin.vo.ClusterMaster4AgentVo">
+        <association property="agent" resultMap="reflectAgent2"/>
+        <association property="cluster" resultMap="reflectCluster"/>
+        <association property="master" resultMap="reflectMaster"/>
+    </resultMap>
+
+    <resultMap id="reflectCluster" type="com.zorkdata.center.admin.entity.Cluster">
+        <result property="clusterID" column="ClusterID"/>
+        <result property="clusterName" column="ClusterName"/>
+    </resultMap>
+
+    <resultMap id="reflectMaster" type="com.zorkdata.center.admin.entity.Master">
+        <result column="MasterID" property="masterID"/>
+        <result column="MasterClusterID" property="clusterID"/>
+        <result column="ComputerID" property="computerID"/>
+        <result column="Port" property="port"/>
+        <result column="State" property="state"/>
+        <result column="InstallationType" property="installationType"/>
+        <result column="MasterLastModifyTime" property="lastModifyTime"/>
+        <result column="IsMaster" property="isMaster"/>
+        <result column="ApiPort" property="apiPort"/>
+    </resultMap>
+
+    <resultMap id="reflectAgent2" type="com.zorkdata.center.admin.entity.Agent">
+        <result property="agentID" column="AgentID"/>
+        <result property="agentName" column="AgentName"/>
+        <result property="state" column="AgentState"/>
+        <result property="lastTime" column="LastTime"/>
+        <result property="loginTime" column="LoginTime"/>
+        <result property="computerID" column="AgentComputerID"/>
+        <result property="version" column="Version"/>
+        <result property="masterID" column="AgentMasterID"/>
+        <result property="installationType" column="AgentInstallationType"/>
+        <result property="lastModifyTime" column="AgentLastModifyTime"/>
+        <result property="masterBackID" column="MasterBackID"/>
+    </resultMap>
+
+
+    <insert id="insertBatch" parameterType="com.zorkdata.center.admin.entity.Agent">
+        INSERT INTO Agent (AgentName,State,LastTime,LoginTime,ComputerID,Version,
+        MasterID,InstallationType,LastModifyTime,MasterBackID,BackState)
+        VALUES(#{agentName},#{state},#{lastTime},#{lastTime},#{computerID},#{version},
+        #{masterID},#{installationType},#{lastModifyTime},#{masterBackID},#{backState})
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+            <if test="agentName!=null">
+                agentName=#{agentName} ,
+            </if>
+            <if test="state!=null">
+                state=#{state} ,
+            </if>
+            <if test="lastTime!=null">
+                lastTime=#{lastTime} ,
+            </if>
+            <if test="loginTime!=null">
+                loginTime=#{loginTime} ,
+            </if>
+            <if test="computerID!=null">
+                computerID=#{computerID} ,
+            </if>
+            <if test="version!=null">
+                version=#{version} ,
+            </if>
+            <if test="masterID!=null">
+                masterID=#{masterID} ,
+            </if>
+            <if test="installationType!=null">
+                installationType=#{installationType} ,
+            </if>
+            <if test="lastModifyTime!=null">
+                lastModifyTime=#{lastModifyTime} ,
+            </if>
+            <if test="masterBackID!=null">
+                masterBackID=#{masterBackID} ,
+            </if>
+            <if test="backState!=null">
+                backState=#{backState} ,
+            </if>
+        </trim>
+    </insert>
+
+    <select id="getAgentStateByAgentName" resultType="java.lang.Integer">
+        select IF(State <![CDATA[<=]]>BackState,State,BackState) from Agent where AgentName=#{agentName}
+    </select>
+
+    <select id="getMasterBackIDNull" resultType="com.zorkdata.center.admin.entity.Agent">
+        SELECT * FROM Agent where MasterBackID IS NULL
+    </select>
+
+    <select id="getAgentNameByHostName" resultType="com.zorkdata.center.admin.vo.AgentNameAndCiCode">
+        SELECT a.AgentName minionId,b.CiCode ciCode,ip,hostName FROM
+        (SELECT AgentName,ComputerID FROM Agent WHERE ComputerID in(SELECT Computer.ComputerID from Computer where Computer.CiCode in
+        <foreach collection="ciCodeList" item="ciCode" separator="," open="(" close=")">
+            #{ciCode}
+        </foreach>
+        )) as a
+        RIGHT JOIN
+        (SELECT CiCode,ComputerID,Computer.IP ip,Computer.HostName hostName FROM Computer WHERE ComputerID in(SELECT Computer.ComputerID from Computer where Computer.CiCode in
+        <foreach collection="ciCodeList" item="ciCode" separator="," open="(" close=")">
+            #{ciCode}
+        </foreach>
+        )) as b
+        on a.ComputerID = b.ComputerID
+    </select>
+
+    <select id="getCiCodeByAgentName" resultType="com.zorkdata.center.admin.vo.AgentNameAndCiCode">
+        SELECT a.AgentName minionId,c.CiCode ciCode,c.ip,c.hostName
+        FROM Agent a ,Computer c
+        WHERE a.ComputerID = c.ComputerID AND a.AgentName = #{agentName}
+    </select>
+
+</mapper>

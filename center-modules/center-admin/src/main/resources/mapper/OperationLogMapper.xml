@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.OperationLogMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.OperationLog">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="OperationLogID" jdbcType="INTEGER" property="operationLogID"/>
+        <result column="OperationType" jdbcType="INTEGER" property="operationType"/>
+        <result column="Content" jdbcType="VARCHAR" property="content"/>
+        <result column="UserID" jdbcType="INTEGER" property="userID"/>
+        <result column="OperationTime" jdbcType="TIME" property="operationTime"/>
+    </resultMap>
+
+    <sql id="OperationLogColumns">
+        OperationLogID,OperationType,Content,UserID,OperationTime
+    </sql>
+</mapper>

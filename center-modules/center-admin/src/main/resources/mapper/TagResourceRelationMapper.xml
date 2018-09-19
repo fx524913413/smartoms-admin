@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.TagResourceRelationMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.TagResourceRelation">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="TagID" jdbcType="BIGINT" property="tagID"/>
+        <result column="ResourceType" jdbcType="VARCHAR" property="resourceType"/>
+        <result column="ResourceID" jdbcType="BIGINT" property="resourceID"/>
+    </resultMap>
+
+    <delete id="deleteBySelective">
+        delete from `TagResourceRelation` where ResourceID=#{resourceID} and ResourceType=#{resourceType} and TagID in
+        <foreach collection="deleteIds" index="index" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getResourceByTagID" resultType="java.lang.Long">
+        select ResourceID from `TagResourceRelation` where ResourceType=#{resourceType} and TagID in
+        <foreach collection="tagIds" index="index" item="tagID" open="(" close=")" separator=",">
+            #{tagID}
+        </foreach>
+    </select>
+
+    <select id="getTagByResourceID" resultType="java.lang.Long">
+        select TagID from `TagResourceRelation` where ResourceType=#{resourceType} and ResourceID=#{resourceID}
+    </select>
+</mapper>

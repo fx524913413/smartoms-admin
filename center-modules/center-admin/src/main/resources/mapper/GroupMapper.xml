@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.GroupMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Group">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="GroupID" jdbcType="BIGINT" property="groupID"/>
+        <result column="GroupName" jdbcType="VARCHAR" property="groupName"/>
+        <result column="ParentID" jdbcType="VARCHAR" property="parentID"/>
+        <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+        <result column="Comment" jdbcType="VARCHAR" property="comment"/>
+        <collection property="users" javaType="com.zorkdata.center.admin.entity.User">
+            <id column="UserID" jdbcType="BIGINT" property="userID"/>
+            <result column="UserName" jdbcType="VARCHAR" property="userName"/>
+            <result column="Password" jdbcType="VARCHAR" property="password"/>
+            <result column="TrueName" jdbcType="VARCHAR" property="trueName"/>
+            <result column="Telphone" jdbcType="VARCHAR" property="telPhone"/>
+            <result column="Email" jdbcType="VARCHAR" property="email"/>
+            <result column="Mobile" jdbcType="VARCHAR" property="mobile"/>
+            <result column="WeiChat" jdbcType="VARCHAR" property="weiChat"/>
+            <result column="QQ" jdbcType="INTEGER" property="QQ"/>
+            <result column="Sex" jdbcType="INTEGER" property="sex"/>
+            <result column="Address" jdbcType="VARCHAR" property="address"/>
+            <result column="State" jdbcType="INTEGER" property="state"/>
+            <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+            <result column="Comment" jdbcType="VARCHAR" property="comment"/>
+        </collection>
+    </resultMap>
+
+    <sql id="GroupColumns">
+        GroupID,GroupName,ParentID,CreateTime,Comment
+    </sql>
+
+    <delete id="deleteByIds" parameterType="java.util.Set">
+        DELETE FROM `Group` WHERE GroupID IN
+        <foreach collection="ids" index="index" item="groupID" open="(" close=")" separator=",">
+            #{groupID}
+        </foreach>
+    </delete>
+
+
+    <update id="updateByGroupId" parameterType="com.zorkdata.center.admin.entity.Group">
+        UPDATE `Group`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="groupName!=null">
+                GroupName=#{groupName},
+            </if>
+            <if test="parentID!=null">
+                ParentID=#{parentID},
+            </if>
+        </trim>
+        WHERE GroupID=#{groupID}
+    </update>
+
+    <select id="getGroupByGroupName" resultType="com.zorkdata.center.admin.entity.Group">
+        select
+        <include refid="GroupColumns"/>
+        from `Group` where GroupName=#{groupName} and ParentID=#{parentID}
+        <if test="groupID!=null">
+           and GroupID !=#{groupID}
+        </if>
+    </select>
+
+    <select id="isHaveUser" resultType="java.lang.Long">
+        select UserID from `UserGroup` where GroupID=#{groupID}
+    </select>
+</mapper>

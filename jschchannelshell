@@ -1,0 +1,17 @@
+mkdir /zork/
+Last login: Mon Jul  9 17:23:29 2018 from zorkdata-3
+[root@zorkdata-5 ~]# mkdir /zork/
+mkdir: 无法创建目录"/zork/": 文件已存在
+[root@zorkdata-5 ~]# service zork-omsmaster uninstall
+zork-omsmaster: 未被识别的服务
+[root@zorkdata-5 ~]# y
+-bash: y: command not found
+[root@zorkdata-5 ~]# service zork-omsapi uninstall
+zork-omsapi: 未被识别的服务
+[root@zorkdata-5 ~]# y
+-bash: y: command not found
+[root@zorkdata-5 ~]# cd ..
+[root@zorkdata-5 /]# chmod 755 install_master.sh
+[root@zorkdata-5 /]# sh install_master4local.sh http://192.168.1.93:8762/file/do wnload/zork-omsmaster-linux-x86_64.zip http://210.22.155.10:8888/File/FileCenter .git
+sh: install_master4local.sh: 没有那个文件或目录
+[root@zorkdata-5 /]# 

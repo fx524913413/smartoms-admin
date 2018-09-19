@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.SaltJobMapper">
+
+    <insert id="insertBatch" parameterType="com.zorkdata.center.admin.entity.SaltJob">
+        INSERT INTO SaltJob (saltjobname,arg,fun,minions,missing,tgt,
+        tgt_type,`user`,state,stamp,jobid,jid)
+        VALUES(#{saltjobname},#{arg},#{fun},#{minions},#{missing},#{tgt},
+        #{tgt_type},#{user},#{state},#{stamp},#{jobid},#{jid})
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+            <if test="saltjobname!=null">
+                saltjobname=#{saltjobname} ,
+            </if>
+            <if test="arg!=null">
+                arg=#{arg} ,
+            </if>
+            <if test="fun!=null">
+                fun=#{fun} ,
+            </if>
+            <if test="minions!=null">
+                minions=#{minions} ,
+            </if>
+            <if test="missing!=null">
+                missing=#{missing} ,
+            </if>
+            <if test="tgt!=null">
+                tgt=#{tgt} ,
+            </if>
+            <if test="tgt_type!=null">
+                tgt_type=#{tgt_type} ,
+            </if>
+            <if test="user!=null">
+                `user`=#{user} ,
+            </if>
+            <if test="state!=null">
+                state=#{state} ,
+            </if>
+            <if test="stamp!=null">
+                stamp=#{stamp} ,
+            </if>
+            <if test="jobid!=null">
+                jobid=#{jobid} ,
+            </if>
+            <if test="jid!=null">
+                jid=#{jid} ,
+            </if>
+        </trim>
+    </insert>
+</mapper>

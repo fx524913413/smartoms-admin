@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.SaltJobRetMapper">
+    <insert id="insertBatch" parameterType="com.zorkdata.center.admin.entity.SaltJobRet">
+        INSERT INTO SaltJobRet (minionid,cmd,jid,saltjobname,fun_args,fun,
+        retcode,missing,returns,success,stamp)
+        VALUES(#{minionid},#{cmd},#{jid},#{saltjobname},#{fun_args},#{fun},
+        #{retcode},#{missing},#{returns},#{success},#{stamp})
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+            <if test="minionid!=null">
+                minionid=#{minionid} ,
+            </if>
+            <if test="cmd!=null">
+                cmd=#{cmd} ,
+            </if>
+            <if test="jid!=null">
+                jid=#{jid} ,
+            </if>
+            <if test="saltjobname!=null">
+                saltjobname=#{saltjobname} ,
+            </if>
+            <if test="fun_args!=null">
+                fun_args=#{fun_args} ,
+            </if>
+            <if test="fun!=null">
+                fun=#{fun} ,
+            </if>
+            <if test="retcode!=null">
+                retcode=#{retcode} ,
+            </if>
+            <if test="missing!=null">
+                missing=#{missing} ,
+            </if>
+            <if test="returns!=null">
+                returns=#{returns} ,
+            </if>
+            <if test="success!=null">
+                success=#{success} ,
+            </if>
+            <if test="stamp!=null">
+                stamp=#{stamp} ,
+            </if>
+        </trim>
+    </insert>
+</mapper>

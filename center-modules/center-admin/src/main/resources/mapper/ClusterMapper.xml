@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.ClusterMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Cluster">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="ClusterID" jdbcType="BIGINT" property="clusterID"/>
+        <result column="ClusterName" jdbcType="VARCHAR" property="clusterName"/>
+    </resultMap>
+
+    <insert id="insertSelectiveGetId" parameterType="com.zorkdata.center.admin.entity.Cluster" keyProperty="clusterID"
+            useGeneratedKeys="true">
+        INSERT INTO Cluster(ClusterID,ClusterName)
+        VALUES (#{clusterID},#{clusterName})
+    </insert>
+
+    <select id="getComputersByClusterID" parameterType="long" resultType="com.zorkdata.center.admin.entity.Computer">
+        SELECT cp.* FROM Computer cp,ClusterComputerRelation ccr
+        WHERE ccr.ClusterID=#{clusterID} AND ccr.ComputerID = cp.ComputerID
+    </select>
+
+    <select id="getAllNoClusterComputers" parameterType="long" resultType="com.zorkdata.center.admin.entity.Computer">
+       SELECT cp.* FROM Computer cp
+       WHERE cp.ComputerID NOT IN (SELECT ComputerID FROM ClusterComputerRelation)
+    </select>
+
+    <delete id="deleteByIds" parameterType="java.util.Set">
+        DELETE FROM Cluster WHERE ClusterID IN
+        <foreach collection="ids" index="index" item="clusterID" open="(" close=")" separator=",">
+            #{clusterID}
+        </foreach>
+    </delete>
+
+    <!--<select id="getMasterAndAgentInfoInCluster" resultMap="masterAndAgentInfoInCluster">-->
+    <!--SELECT cluster.ClusterID as clusterID,cluster.ClusterName as clusterName,computer.IP as masterip,IF(ma.State=2,'dead','alive') as flag,agentstate.numberOfAlive,agentstate.numberOfDead-->
+    <!--FROM ClusterComputerRelation ccr,Computer computer,`Master` ma,Cluster cluster,(SELECT agentcount.clusterID,sum(IF(agentcount.state=1,agentcount.count,0)) as numberOfAlive,sum(IF(agentcount.state=2,agentcount.count,0)) as numberOfDead FROM-->
+    <!--(SELECT ccr.ClusterID,IF(State+BackState=4,2,1)as state, COUNT(*) as count-->
+    <!--FROM Agent agent,Computer computer,ClusterComputerRelation ccr-->
+    <!--WHERE agent.ComputerID = computer.ComputerID AND ccr.ComputerID = computer.ComputerID-->
+    <!--GROUP BY IF(State+BackState=4,2,1),ccr.ClusterID-->
+    <!--) agentcount GROUP BY agentcount.ClusterID) agentstate-->
+    <!--WHERE ccr.ComputerID = computer.ComputerID AND ma.ComputerID = computer.ComputerID AND cluster.ClusterID = ccr.ClusterID AND agentstate.clusterID = cluster.ClusterID AND ma.ClusterID = cluster.ClusterID;-->
+    <!--</select>-->
+    <select id="getMasterAndAgentInfoInCluster" resultMap="masterAndAgentInfoInCluster">
+        SELECT CNM.ClusterID,CNM.ClusterName,ClusterInfo.masterip,ClusterInfo.flag,CNM.numberOfAlive,CNM.numberOfDead
+        FROM
+        (SELECT Cluster.ClusterID,Cluster.ClusterName,IF(CN.numberOfAlive IS NULL,0,CN.numberOfAlive) AS
+        numberOfAlive,IF(CN.numberOfDead IS NULL,0,CN.numberOfDead)AS numberOfDead FROM Cluster
+        LEFT JOIN(SELECT agentcount.clusterID,sum(IF(agentcount.state=1,agentcount.count,0)) as
+        numberOfAlive,sum(IF(agentcount.state=2,agentcount.count,0)) as numberOfDead FROM
+        (SELECT ccr.ClusterID,IF(State+BackState=4,2,1)as state, COUNT(*) as count
+        FROM Agent agent,ClusterComputerRelation ccr
+        WHERE agent.ComputerID = ccr.ComputerID
+        AND ccr.ComputerID IN
+        <foreach collection="computerIds" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+        GROUP BY IF(State+BackState=4,2,1),ccr.ClusterID
+        ) agentcount GROUP BY agentcount.ClusterID) AS CN
+        ON Cluster.ClusterID = CN.ClusterID) AS CNM
+        LEFT JOIN
+        (SELECT cluster.ClusterID,cluster.ClusterName,computer.IP as masterip,IF(ma.State=2,'dead','alive') as flag
+        FROM ClusterComputerRelation ccr,Computer computer,`Master` ma,Cluster cluster
+        where cluster.ClusterID = ccr.ClusterID and cluster.ClusterID = ma.ClusterID AND ma.ComputerID =
+        computer.ComputerID
+        AND computer.ComputerID IN
+        <foreach collection="computerIds" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>) AS ClusterInfo
+        ON ClusterInfo.ClusterID = CNM.ClusterID
+    </select>
+
+    <select id="getNoMasterInfoInCluster" resultMap="masterAndAgentInfoInCluster">
+        SELECT cluster.ClusterID as clusterID,cluster.ClusterName as clusterName,0 as numberOfAlive,0 as numberOfDead
+            FROM Cluster cluster
+            WHERE cluster.ClusterID NOT IN (SELECT ClusterID FROM ClusterComputerRelation)
+    </select>
+
+
+    <resultMap id="masterAndAgentInfoInCluster" type="com.zorkdata.center.admin.vo.ClusterInfo">
+        <result property="clusterID" column="clusterID"/>
+        <result property="clusterName" column="clusterName"/>
+        <result property="numberOfDead" column="numberOfDead"/>
+        <result property="numberOfAlive" column="numberOfAlive"/>
+        <collection property="masterlistOfCluster" ofType="com.zorkdata.center.admin.vo.Master4AgentDeploymentVo"
+                    javaType="ArrayList">
+            <result property="masterip" column="masterip"/>
+            <result property="flag" column="flag"/>
+        </collection>
+    </resultMap>
+</mapper>

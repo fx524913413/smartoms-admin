@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.UserGroupMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.UserGroup">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="UserGroupID" jdbcType="BIGINT" property="userGroupID"/>
+        <result column="UserID" jdbcType="BIGINT" property="userID"/>
+        <result column="GroupID" jdbcType="BIGINT" property="groupID"/>
+    </resultMap>
+
+    <delete id="deleteByGroupIds" parameterType="java.util.Set">
+        DELETE FROM `UserGroup` WHERE GroupID IN
+        <foreach collection="ids" index="index" item="groupID" open="(" close=")" separator=",">
+            #{groupID}
+        </foreach>
+    </delete>
+    <delete id="deleteByUserIds" parameterType="java.util.Set">
+        DELETE FROM `UserGroup` WHERE UserID IN
+        <foreach collection="ids" index="index" item="userID" open="(" close=")" separator=",">
+            #{userID}
+        </foreach>
+    </delete>
+    <select id="getGroupIDByUserID" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT GroupID FROM `UserGroup` WHERE UserID=#{userID}
+    </select>
+</mapper>

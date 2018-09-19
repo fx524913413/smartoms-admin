@@ -1,0 +1,28 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.datasynchro.mapper.ComputerMapper">
+    <resultMap id="appSystemVoMap" type="com.zorkdata.datasynchro.vo.BizVo2">
+        <result property="appSystemName" column="AppSystemName"/>
+        <result property="sysCode" column="SysCode"/>
+        <collection property="setVos" ofType="com.zorkdata.datasynchro.vo.SetVo2">
+            <result property="setName" column="ClusterName"/>
+            <collection property="modules" ofType="com.zorkdata.datasynchro.vo.MoudleComputerVo">
+                <result property="moduleName" column="AppProgramName"/>
+                <result property="ip" column="IP"/>
+                <result property="computerName" column="ComputerName"/>
+                <result property="osType" column="Type"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getAllComputer" resultType="com.zorkdata.datasynchro.entity.Computer">
+       select ComputerID,ComputerName,IP,Type FROM Computer
+	</select>
+    
+    <select id="getBizToComputer" resultMap="appSystemVoMap">
+        select s.AppSystemName,s.SysCode,p.ClusterName,p.AppProgramName,c.ComputerName,c.IP,c.Type from AppSystem s, AppProgram p,Computer c
+        ,(select SrcID,DestID from ObjRelationship where SrcType='AppSystem') r
+        where s.AppSystemID=r.SrcID and p.AppProgramID=r.DestID and c.ComputerID=p.ComputerID
+    </select>
+</mapper>

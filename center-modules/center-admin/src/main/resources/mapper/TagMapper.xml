@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.TagMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Tag">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="tagName" jdbcType="VARCHAR" property="tagName"/>
+        <result column="comment" jdbcType="VARCHAR" property="comment"/>
+        <result column="productID" jdbcType="INTEGER" property="productID"/>
+        <result column="createTime" jdbcType="TIME" property="createTime"/>
+    </resultMap>
+
+    <insert id="insertByTag" parameterType="com.zorkdata.center.admin.entity.Tag" keyProperty="id"
+            useGeneratedKeys="true">
+        INSERT INTO Tag(tagName,comment,productID,createTime)
+        VALUES (#{tagName},#{comment},#{productID},#{createTime})
+    </insert>
+
+    <delete id="deleteByIds">
+        DELETE FROM Tag WHERE id IN
+        <foreach collection="ids" index="index" item="ID" open="(" close=")" separator=",">
+            #{ID}
+        </foreach>
+    </delete>
+
+    <select id="getTagByTagIds" resultType="com.zorkdata.center.admin.entity.Tag">
+        SELECT id,tagName,comment,productID FROM `Tag` WHERE ID IN
+        <foreach collection="tagIds" index="index" item="ID" open="(" close=")" separator=",">
+            #{ID}
+        </foreach>
+    </select>
+
+    <select id="getResourceByTagIds" resultType="java.lang.Long">
+        select ResourceID from `TagResourceRelation` where ResourceType=#{resourceType} and TagID in
+        <foreach collection="tagIds" index="index" item="ID" open="(" close=")" separator=",">
+            #{ID}
+        </foreach>
+    </select>
+
+    <select id="selectTagByTagName" resultType="com.zorkdata.center.admin.entity.Tag">
+        SELECT id,tagName,comment,productID FROM `Tag` WHERE TagName =#{tagName} and ProductID = #{productID}
+        <if test="tagID!=null">
+            and id!=#{tagID}
+        </if>
+    </select>
+
+    <update id="updateSelectiveByTagID" parameterType="com.zorkdata.center.admin.entity.Tag">
+        UPDATE `Tag`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="tagName!=null">
+                tagName=#{tagName},
+            </if>
+            <if test="productID!=null">
+                productID=#{productID},
+            </if>
+            <if test="comment!=null">
+                comment=#{comment},
+            </if>
+            <if test="createTime!=null">
+                createTime=#{createTime},
+            </if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getTagByProductID" resultType="com.zorkdata.center.admin.entity.Tag">
+         SELECT id,tagName,comment,productID,createTime  FROM `Tag` WHERE ProductID=#{productID} order by createTime desc
+    </select>
+
+    <select id="getSystemTag" resultType="com.zorkdata.center.admin.entity.Tag">
+        SELECT id,tagName,comment,productID FROM `Tag` WHERE ProductID is null
+    </select>
+
+    <select id="getProductTag" resultType="com.zorkdata.center.admin.entity.Tag">
+        SELECT id,tagName,comment,productID,createTime FROM `Tag` WHERE ProductID=#{productID}
+    </select>
+
+    <select id="getSystemTagByTagIds" resultType="com.zorkdata.center.admin.entity.Tag">
+        SELECT id,tagName,comment,productID,createTime FROM `Tag` WHERE ProductID=#{productID} and id in
+        <foreach collection="tagIds" index="index" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by createTime desc
+    </select>
+
+    <select id="getProductTagByResourceID" resultType="com.zorkdata.center.admin.entity.Tag">
+        SELECT id,tagName,comment,productID FROM `Tag` WHERE ProductID=#{productID} and ID IN
+        <foreach collection="tagIds" index="index" item="ID" open="(" close=")" separator=",">
+            #{ID}
+        </foreach>
+        order by createTime DESC
+    </select>
+</mapper>

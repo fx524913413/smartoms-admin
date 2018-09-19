@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.JobMapper">
+    <insert id="insertJob" parameterType="com.zorkdata.center.admin.entity.Job" useGeneratedKeys="true"
+            keyProperty="jobid">
+        INSERT INTO Job (state,createtime)
+        VALUES (#{state},#{createtime})
+    </insert>
+</mapper>

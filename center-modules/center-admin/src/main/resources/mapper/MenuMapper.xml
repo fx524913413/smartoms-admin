@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.MenuMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Menu">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="MenuID" jdbcType="BIGINT" property="menuID"/>
+        <result column="MenuName" jdbcType="VARCHAR" property="menuName"/>
+        <result column="ParentID" jdbcType="BIGINT" property="parentID"/>
+        <result column="URL" jdbcType="VARCHAR" property="url"/>
+        <result column="Sort" jdbcType="BIGINT" property="sort"/>
+        <result column="Code" jdbcType="VARCHAR" property="code"/>
+        <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+        <result column="Comment" jdbcType="VARCHAR" property="comment"/>
+        <result column="ProductID" jdbcType="INTEGER" property="productID"/>
+    </resultMap>
+
+    <sql id="MenuColumns">
+        MenuID,MenuName,ParentID,URL,Sort,Code,CreateTime,Comment,ProductID
+    </sql>
+
+    <select id="getMenuByResourceID">
+        SELECT
+        <include refid="MenuColumns"/>
+        FROM `Menu` where MenuID IN
+        <foreach collection="list" index="index" item="menuID" open="(" close=")" separator=",">
+            #{menuID}
+        </foreach>
+    </select>
+
+    <update id="updateByMenuId">
+        UPDATE `Menu`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="menuName!=null">
+                MenuName=#{menuName},
+            </if>
+            <if test="parentID!=null">
+                ParentID=#{parentID},
+            </if>
+            <if test="url!=null">
+                URL=#{url},
+            </if>
+            <if test="sort!=null">
+                Sort=#{sort},
+            </if>
+            <if test="code!=null">
+                Code=#{code},
+            </if>
+            <if test="tag!=null">
+                Tag=#{tag},
+            </if>
+            <if test="productID!=null">
+                ProductID=#{productID},
+            </if>
+            <if test="createTime!=null">
+                CreateTime=#{createTime},
+            </if>
+            <if test="comment!=null">
+                Comment=#{comment},
+            </if>
+        </trim>
+        WHERE MenuID=#{menuID}
+    </update>
+
+    <delete id="deleteMenuByIds">
+        DELETE FROM `Menu` WHERE MenuID IN
+        <foreach collection="array" index="index" item="menuID" open="(" close=")" separator=",">
+            #{menuID}
+        </foreach>
+    </delete>
+
+    <select id="getAllMenu" resultType="com.zorkdata.center.admin.vo.MenuVo">
+        select m1.MenuID,m1.MenuName,m1.ParentID,m1.URL,m1.Sort,m1.Code,m1.CreateTime,m1.Comment,
+        m2.MenuName as parentMenuName from `Menu` as m1 LEFT JOIN `Menu` as m2 on m1.ParentID=m2.MenuID
+    </select>
+
+    <select id="getMenuByProductID" resultType="com.zorkdata.center.admin.entity.Menu">
+        SELECT
+        <include refid="MenuColumns"/>
+        FROM `Menu` where ProductID =#{productID} or ProductID is null
+    </select>
+</mapper>

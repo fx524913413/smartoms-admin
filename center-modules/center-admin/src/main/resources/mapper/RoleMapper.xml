@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Role">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="RoleID" jdbcType="BIGINT" property="roleID"/>
+        <result column="RoleName" jdbcType="VARCHAR" property="roleName"/>
+        <result column="State" jdbcType="INTEGER" property="state"/>
+        <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+        <result column="Comment" jdbcType="VARCHAR" property="comment"/>
+        <result column="ProductID" jdbcType="INTEGER" property="productID"/>
+        <collection property="users" javaType="com.zorkdata.center.admin.entity.User">
+            <id column="UserID" jdbcType="BIGINT" property="userID"/>
+            <result column="UserName" jdbcType="VARCHAR" property="userName"/>
+            <result column="Password" jdbcType="VARCHAR" property="password"/>
+            <result column="TrueName" jdbcType="VARCHAR" property="trueName"/>
+            <result column="Telphone" jdbcType="VARCHAR" property="telPhone"/>
+            <result column="Email" jdbcType="VARCHAR" property="email"/>
+            <result column="Mobile" jdbcType="VARCHAR" property="mobile"/>
+            <result column="WeiChat" jdbcType="VARCHAR" property="weiChat"/>
+            <result column="QQ" jdbcType="INTEGER" property="QQ"/>
+            <result column="Sex" jdbcType="INTEGER" property="sex"/>
+            <result column="Address" jdbcType="VARCHAR" property="address"/>
+            <result column="State" jdbcType="INTEGER" property="state"/>
+            <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+            <result column="Comment" jdbcType="VARCHAR" property="comment"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="RoleInfoMap" type="com.zorkdata.center.admin.vo.RoleInfo">
+        <id column="RoleID" jdbcType="BIGINT" property="id"/>
+        <result column="RoleName" jdbcType="VARCHAR" property="name"/>
+        <result column="State" jdbcType="INTEGER" property="state"/>
+        <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+        <result column="Comment" jdbcType="VARCHAR" property="comment"/>
+        <result column="ProductID" jdbcType="INTEGER" property="parentID"/>
+    </resultMap>
+    <sql id="RoleColumns">
+        RoleID,RoleName,State,CreateTime,Comment,ProductID
+    </sql>
+
+    <insert id="insertSelectiveGetId" parameterType="com.zorkdata.center.admin.entity.Role" keyProperty="roleID"
+            useGeneratedKeys="true">
+        INSERT INTO Role(RoleName,State,CreateTime,Comment,ProductID)
+        VALUES (#{roleName},#{state},#{createTime},#{comment},#{productID})
+    </insert>
+
+    <update id="updateByRoleID" parameterType="com.zorkdata.center.admin.entity.Role">
+        UPDATE `Role`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="roleName!=null">
+                RoleName=#{roleName},
+            </if>
+            <if test="state!=null">
+                State=#{state},
+            </if>
+            <if test="createTime!=null">
+                CreateTime=#{createTime},
+            </if>
+            <if test="comment!=null">
+                Comment=#{comment},
+            </if>
+            <if test="productID!=null">
+                ProductID=#{productID},
+            </if>
+        </trim>
+        WHERE RoleID = #{roleID}
+    </update>
+
+    <delete id="deleteByIds">
+        DELETE FROM `Role` WHERE RoleID IN
+        <foreach collection="list" index="index" item="roleID" open="(" close=")" separator=",">
+            #{roleID}
+        </foreach>
+    </delete>
+
+    <select id="getRoleByProductID" parameterType="java.lang.Integer"
+            resultType="com.zorkdata.center.admin.entity.Role">
+        SELECT
+        <include refid="RoleColumns"/>
+        FROM `Role` WHERE ProductID=#{productID}
+    </select>
+
+    <select id="getRoleIDByProductID" parameterType="java.lang.Integer" resultType="java.lang.Long">
+        SELECT RoleID FROM `Role` WHERE ProductID=#{productID}
+    </select>
+
+    <select id="getRoleInfoByProductID" parameterType="java.lang.Integer" resultMap="RoleInfoMap">
+        SELECT
+        <include refid="RoleColumns"/>
+        FROM `Role` WHERE ProductID=#{productID}
+    </select>
+
+    <select id="getRoleByIds" resultType="com.zorkdata.center.admin.entity.Role">
+        SELECT
+        <include refid="RoleColumns"/>
+        FROM `Role` WHERE RoleID IN
+        <foreach collection="roleIds" index="index" item="roleID" open="(" close=")" separator=",">
+            #{roleID}
+        </foreach>
+    </select>
+
+    <select id="getRoleByRoleNameAndProductCode" resultType="com.zorkdata.center.admin.entity.Role">
+        SELECT
+        <include refid="RoleColumns"/>
+        FROM `Role` WHERE RoleName=#{roleName} and ProductID=#{productID}
+        <if test="roleID!=null">
+            and RoleID !=#{roleID}
+        </if>
+    </select>
+</mapper>

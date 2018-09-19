@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.User">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="UserID" jdbcType="BIGINT" property="userID" />
+        <result column="UserName" jdbcType="VARCHAR" property="userName" />
+        <result column="Password" jdbcType="VARCHAR" property="password" />
+        <result column="TrueName" jdbcType="VARCHAR" property="trueName" />
+        <result column="Telphone" jdbcType="VARCHAR" property="telPhone" />
+        <result column="Email" jdbcType="VARCHAR" property="email" />
+        <result column="Mobile" jdbcType="VARCHAR" property="mobile" />
+        <result column="WeiChat" jdbcType="VARCHAR" property="weiChat" />
+        <result column="QQ" jdbcType="INTEGER" property="QQ" />
+        <result column="Sex" jdbcType="INTEGER" property="sex" />
+        <result column="Address" jdbcType="VARCHAR" property="address" />
+        <result column="State" jdbcType="INTEGER" property="state" />
+        <result column="CreateTime" jdbcType="TIME" property="createTime" />
+        <result column="Comment" jdbcType="VARCHAR" property="comment" />
+        <collection property="roles" javaType="com.zorkdata.center.admin.entity.Role" >
+            <id column="RoleID" jdbcType="BIGINT" property="roleID" />
+            <result column="RoleName" jdbcType="VARCHAR" property="roleName" />
+            <result column="State" jdbcType="INTEGER" property="state" />
+            <result column="CreateTime" jdbcType="TIME" property="createTime" />
+            <result column="Comment" jdbcType="VARCHAR" property="comment" />
+            <result column="ProductID" jdbcType="INTEGER" property="productID" />
+        </collection>
+        <collection property="groups" javaType="com.zorkdata.center.admin.entity.Group">
+            <id column="GroupID" jdbcType="BIGINT" property="groupID" />
+            <result column="GroupName" jdbcType="VARCHAR" property="groupName" />
+            <result column="ParentID" jdbcType="VARCHAR" property="parentID" />
+            <result column="CreateTime" jdbcType="TIME" property="createTime" />
+            <result column="Comment" jdbcType="VARCHAR" property="comment" />
+        </collection>
+    </resultMap>
+
+    <resultMap id="userGroupResultMap" type="com.zorkdata.center.admin.entity.User">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="UserID" jdbcType="BIGINT" property="userID" />
+        <result column="UserName" jdbcType="VARCHAR" property="userName" />
+        <result column="Password" jdbcType="VARCHAR" property="password" />
+        <result column="TrueName" jdbcType="VARCHAR" property="trueName" />
+        <result column="Telphone" jdbcType="VARCHAR" property="telPhone" />
+        <result column="Email" jdbcType="VARCHAR" property="email" />
+        <result column="Mobile" jdbcType="VARCHAR" property="mobile" />
+        <result column="WeiChat" jdbcType="VARCHAR" property="weiChat" />
+        <result column="QQ" jdbcType="INTEGER" property="QQ" />
+        <result column="Sex" jdbcType="INTEGER" property="sex" />
+        <result column="Address" jdbcType="VARCHAR" property="address" />
+        <result column="State" jdbcType="INTEGER" property="state" />
+        <result column="CreateTime" jdbcType="TIME" property="createTime" />
+        <result column="Comment" jdbcType="VARCHAR" property="comment" />
+        <collection property="groups" javaType="com.zorkdata.center.admin.entity.Group">
+            <id column="GroupID" jdbcType="BIGINT" property="groupID" />
+            <result column="GroupName" jdbcType="VARCHAR" property="groupName" />
+            <result column="ParentID" jdbcType="VARCHAR" property="parentID" />
+            <result column="CreateTime" jdbcType="TIME" property="createTime" />
+            <result column="Comment" jdbcType="VARCHAR" property="comment" />
+        </collection>
+    </resultMap>
+    <sql id="UserColumns">
+        UserID,UserName,Password,TrueName,Telphone,Email,Mobile,WeiChat,
+        QQ,Sex,Address,State,CreateTime,Comment
+    </sql>
+
+    <insert id="insertSelectiveGetId" parameterType="com.zorkdata.center.admin.entity.User" keyProperty="userID" useGeneratedKeys="true">
+        INSERT INTO User(UserName,Password,TrueName,Telphone,Email,Mobile,WeiChat,
+        QQ,Sex,Address,State,CreateTime,Comment)
+        VALUES (#{userName},#{password},#{trueName},#{telPhone},#{email},#{mobile},#{weiChat},
+         #{QQ},#{sex},#{address},#{state},#{createTime},#{comment}
+        )
+    </insert>
+    <select id="getUserByGroupId" parameterType="java.lang.Long" resultType="com.zorkdata.center.admin.entity.User">
+        SELECT <include refid="UserColumns"/> FROM User WHERE UserID in(SELECT UserID FROM UserGroup WHERE GroupID=#{groupID})
+    </select>
+    <delete id="deleteByIds" parameterType="java.util.Set">
+        DELETE FROM `User` WHERE UserID IN
+        <foreach collection="ids" index="index" item="userID" open="(" close=")" separator=",">
+            #{userID}
+        </foreach>
+    </delete>
+    <update id="updateByUserID" parameterType="com.zorkdata.center.admin.entity.User">
+        UPDATE `User`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test='userName!=null or userName!="" '>
+                UserName=#{userName},
+            </if>
+            <if test='password!=null or password!="" '>
+                Password=#{password},
+            </if>
+            <if test='trueName!=null or trueName!="" '>
+                TrueName=#{trueName},
+            </if>
+            <if test='telPhone!=null or telPhone!="" '>
+                TelPhone=#{telPhone},
+            </if>
+            <if test='email!=null or email!="" '>
+                Email=#{email},
+            </if>
+            <if test='mobile!=null or mobile!="" '>
+                Mobile=#{mobile},
+            </if>
+            <if test='weiChat!=null or weiChat!="" '>
+                WeiChat=#{weiChat},
+            </if>
+            <if test='QQ!=null or QQ!="" '>
+                QQ=#{QQ},
+            </if>
+            <if test='sex!=null or sex!="" '>
+                Sex=#{sex},
+            </if>
+            <if test='address!=null or address!="" '>
+                Address=#{address},
+            </if>
+            <if test='state!=null or state!="" '>
+                State=#{state},
+            </if>
+            <if test='createTime!=null or createTime!="" '>
+                CreateTime=#{createTime},
+            </if>
+            <if test='comment!=null or comment!="" '>
+                Comment=#{comment},
+            </if>
+        </trim>
+        WHERE UserID=#{userID}
+    </update>
+
+    <select id="getUserByIds" resultType="com.zorkdata.center.admin.entity.User">
+        select <include refid="UserColumns"/> from `User` where  UserID in
+        <foreach collection="userIds" index="index" item="userID" open="(" close=")" separator=",">
+            #{userID}
+        </foreach>
+    </select>
+
+    <select id="getAllUser" resultType="com.zorkdata.center.admin.entity.User">
+        select UserID,UserName,TrueName from `User`
+    </select>
+
+    <select id="getUserByUserName" resultType="com.zorkdata.center.admin.entity.User">
+        select <include refid="UserColumns"/> from `User` where  UserName=#{userName}
+        <if test="userID!=null">
+            and UserID!=#{userID}
+        </if>
+    </select>
+</mapper>

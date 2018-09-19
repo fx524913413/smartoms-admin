@@ -1,0 +1,217 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.adminv2.mapper.AppSystemMapper">
+    <select id="getSystemInfo" resultMap="appSystemWorkerNode">
+		SELECT distinct s.AppSystemID,s.AppSystemName,s.SysCode,obj.DestID as WorkerNodeID,wc.WorkNode,wc.WorkerNodeName,wc.IP,wc.Type,wc.State
+		FROM dbo.ObjRelationship obj,dbo.AppSystem s, dbo.AppProgram app,(
+SELECT computer.ComputerID,w.WorkerNodeType,w.WorkerNodeID,(CONVERT(varchar(10), router.RouterID)+'.'+CONVERT(varchar(10),w.NodeID)) as WorkNode,w.WorkerNodeName,computer.IP,computer.Type,w.State
+FROM dbo.WorkerNode w,dbo.Broker router,dbo.Computer computer
+WHERE w.BrokerID= router.BrokerID AND w.ComputerID = computer.ComputerID AND WorkerNodeType='Agent') wc
+		WHERE obj.SrcType='AppSystem' AND  obj.DestType='AppProgram' AND (s.ParentID = obj.SrcID OR s.AppSystemID = obj.SrcID)
+    AND app.ComputerID = wc.ComputerID AND obj.DestID = app.AppProgramID
+	</select>
+
+    <select id="getSystemInfoByUserName" resultMap="appSystemWorkerNode" parameterType="String">
+		SELECT distinct s.AppSystemID,s.AppSystemName,s.SysCode,obj.DestID as WorkerNodeID,wc.WorkNode,wc.WorkerNodeName,wc.IP,wc.Type,wc.State
+		FROM dbo.ObjRelationship obj,dbo.AppSystem s, dbo.AppProgram app,(
+		SELECT computer.ComputerID,w.WorkerNodeType,w.WorkerNodeID,(CONVERT(varchar(10), router.RouterID)+'.'+CONVERT(varchar(10),w.NodeID)) as WorkNode,w.WorkerNodeName,computer.IP,computer.Type,w.State
+		FROM dbo.WorkerNode w,dbo.Broker router,dbo.Computer computer
+		WHERE w.BrokerID= router.BrokerID AND w.ComputerID = computer.ComputerID AND WorkerNodeType='Agent') wc
+		WHERE obj.SrcType='AppSystem' AND  obj.DestType='AppProgram' AND (s.ParentID = obj.SrcID OR s.AppSystemID = obj.SrcID)
+		AND app.ComputerID = wc.ComputerID AND obj.DestID = app.AppProgramID
+		AND s.AppSystemID in
+	    (select RIGHT(m.CommandText,LEN(m.CommandText)-CHARINDEX('/',m.CommandText)) AppSystemID
+	    from MenuItem m where m.ActionID in
+            (select ap.ActionID from [user] u, Authorize ur, ActionPermission ap
+                where u.UserID = ur.OrganizationID and ur.RoleID = ap.RoleID
+								and m.CommandText LIKE 'page-system%' AND u.userName = #{userName})
+		);
+	</select>
+
+	<select id="getClusterBySysInfo" parameterType="map" resultType="com.zorkdata.center.adminv2.vo.AppProgramVo">
+		select DISTINCT s.AppSystemID,s.AppSystemName, p.ClusterName, p.ClusterInstanceId clusterId
+		from AppSystem s, AppProgram p,
+		(select SrcID,DestID from ObjRelationship where SrcType='AppSystem' and
+		SrcID in
+		<foreach item="item" index="index" collection="systemId"
+				 open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		) r
+		where s.AppSystemID=r.SrcID and p.AppProgramID=r.DestID
+		and p.ClusterInstanceId is not null
+		order by s.AppSystemName,s.AppSystemID
+	</select>
+
+    <resultMap id="appSystemWorkerNode" type="com.zorkdata.center.adminv2.vo.AppSystemInfoVo">
+        <result property="appSystemId" column="AppSystemID"/>
+        <result property="appSystemName" column="AppSystemName"/>
+        <result property="sysCode" column="SysCode"/>
+        <collection property="workerNodes" ofType="com.zorkdata.center.adminv2.vo.WorkerNode" javaType="list">
+            <result property="workerNodeId" column="WorkerNodeID"/>
+            <result property="worknode" column="WorkNode"/>
+            <result property="workerNodeName" column="WorkerNodeName"/>
+            <result property="ip" column="IP"/>
+            <result property="type" column="Type"/>
+            <result property="state" column="State"/>
+        </collection>
+    </resultMap>
+
+    <select id="getSystemById" parameterType="string" resultType="com.zorkdata.center.adminv2.vo.AppSystemVo">
+		select * from AppSystem where AppSystemID=#{systemid}
+	</select>
+    <select id="getSystemByParentIdAndSystemID" parameterType="map"
+            resultType="com.zorkdata.center.adminv2.vo.AppSystemVo">
+		select * from dbo.AppSystem s where s.AppSystemID in (select a.objid from [user] u, Authorize ur, ResourcePermission rp,
+(select rg.ResourceGroupID,r.ResourceID,r.ObjID,r.ResourceName,o.TypeID,o.Name
+from ObjType o, ResourceGroup rg, Resource r  where rg.ObjTypeID = o.TypeID and r.ResourceGroupID = rg.ResourceGroupID and  o.Name = 'AppSystem'
+) a where u.UserID = ur.OrganizationID and ur.RoleID = rp.RoleID and rp.ResourceGroupID = a.ResourceGroupID and u.UserID = #{userId}) AND ParentID=#{systemid} OR AppSystemID=#{systemid}
+	</select>
+    <select id="getSystemByParentId" parameterType="map" resultType="com.zorkdata.center.adminv2.vo.AppSystemVo">
+		select * from dbo.AppSystem s where s.AppSystemID in (select a.objid from [user] u, Authorize ur, ResourcePermission rp,
+		(select rg.ResourceGroupID,r.ResourceID,r.ObjID,r.ResourceName,o.TypeID,o.Name
+		from ObjType o, ResourceGroup rg, Resource r  where rg.ObjTypeID = o.TypeID and r.ResourceGroupID = rg.ResourceGroupID and  o.Name = 'AppSystem'
+		) a where u.UserID = ur.OrganizationID and ur.RoleID = rp.RoleID and rp.ResourceGroupID = a.ResourceGroupID and u.UserID = #{userId}) AND ParentID=#{systemid}
+	</select>
+    <select id="getSystemByName" parameterType="map" resultType="map">
+        SELECT *
+        FROM AppSystem
+        WHERE AppSystemName = #{appSystemName} collate Chinese_PRC_CS_AS
+        <if test="sysCode!=null">OR [SysCode] = #{sysCode} collate Chinese_PRC_CS_AS
+        </if>
+    </select>
+    <select id="getSystemList" parameterType="string" resultType="com.zorkdata.center.adminv2.vo.AppSystemVo">
+		select * from AppSystem
+	</select>
+    <insert id="addSysParameter" parameterType="map">
+		INSERT INTO SysParameter([SysParameterID]
+      ,[Name]
+      ,[DisplayName]
+      ,[DataType]
+      ,[DefaultValue]
+      ,[Type]
+      ,[TypeID])
+      VALUES (#{sysParameterID},#{name},#{displayName},#{dateType},#{hostIP},#{type},#{typeID})
+	</insert>
+    <update id="updateSysParameter" parameterType="map">
+		UPDATE SysParameter
+		SET DefaultValue = #{hostIP}
+		WHERE Name = #{name}
+		AND Type = #{type}
+		AND TypeID = #{typeID}
+	</update>
+    <delete id="delSystemParameter" parameterType="map">
+		DELETE SysParameter
+		WHERE Type = #{type}
+		AND TypeID = #{typeID}
+	</delete>
+    <select id="getObjRelationShipBySrcId" parameterType="map" resultType="java.lang.String">
+		SELECT *
+		FROM [ObjRelationship]
+		WHERE [SrcID] = #{AppSystemID}
+	</select>
+    <delete id="delObjRelationShip" parameterType="map">
+		DELETE [ObjRelationship]
+		WHERE [SrcID] = #{typeID}
+	</delete>
+    <insert id="addResourceInfo" parameterType="map">
+		INSERT INTO [Resource]([ResourceID]
+      ,[ResourceName]
+      ,[ObjID]
+      ,[ResourceGroupID])
+      VALUES (#{resourceid},#{resourceName},#{objectid},#{resourceGroupId})
+	</insert>
+    <insert id="addSystemInfo" parameterType="map">
+		INSERT INTO [AppSystem](AppSystemID,[AppSystemName],[SysCode],[CreateUser],[CreateDateTime],[ParentID])
+		VALUES (#{id},#{appSystemName},#{sysCode},#{createUser},#{createDateTime},#{parentID})
+	</insert>
+    <update id="updateSystemInfo" parameterType="map">
+		UPDATE AppSystem
+		SET [AppSystemName] = #{appSystemName},[UpdateUser] = #{updateUser},[UpdateDateTime] = #{updateTime}
+		WHERE [AppSystemID] = #{appSystemID}
+	</update>
+    <update id="updateResourceInfo" parameterType="map">
+		UPDATE Resource
+		SET [ResourceName] = #{resourceName}
+		WHERE [ObjID] = #{objectID}
+	</update>
+    <delete id="delSystemInfo" parameterType="map">
+		DELETE FROM AppSystem
+		WHERE [AppSystemName] = #{appSystemName} collate Chinese_PRC_CS_AS
+	</delete>
+    <delete id="delResourceInfo" parameterType="map">
+		DELETE FROM Resource
+		WHERE [ResourceName] = #{resourceName} collate Chinese_PRC_CS_AS
+	</delete>
+    <select id="getSystemListById" parameterType="string" resultType="com.zorkdata.center.adminv2.vo.AppSystemVo">
+        select *
+        from AppSystem where AppSystemID in
+        <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="getSystemByUserId" parameterType="long" resultType="com.zorkdata.center.adminv2.vo.AppSystemVo">
+  	select * from dbo.AppSystem s where s.AppSystemID in (select a.objid from [user] u, Authorize ur, ResourcePermission rp,
+(select rg.ResourceGroupID,r.ResourceID,r.ObjID,r.ResourceName,o.TypeID,o.Name
+from ObjType o, ResourceGroup rg, Resource r  where rg.ObjTypeID = o.TypeID and r.ResourceGroupID = rg.ResourceGroupID and  o.Name = 'AppSystem'
+) a where u.UserID = ur.OrganizationID and ur.RoleID = rp.RoleID and rp.ResourceGroupID = a.ResourceGroupID and u.UserID = #{userId})
+	</select>
+    <select id="getObjRelationship" parameterType="map" resultType="String">
+		SELECT [ObjRelationshipID] FROM [ObjRelationship] WHERE [DestID] = #{destID}
+	</select>
+    <insert id="addObjRelationship" parameterType="map">
+		INSERT INTO [ObjRelationship]([ObjRelationshipID] ,[ObjRelationshipName],[SrcType],[DestType] ,[SrcID]
+		,[DestID] ,[RelationshipID])
+		VALUES (#{objRelationshipID},#{objRelationshipName},#{srcType},#{destType},#{srcID},#{destID},#{relationshipID})
+	</insert>
+    <delete id="delObjRelationship" parameterType="map">
+		DELETE [ObjRelationship] WHERE [SrcID] = #{srcID} AND [DestID]= #{destID}
+	</delete>
+    <update id="updateObjRelationship" parameterType="map">
+		UPDATE [ObjRelationship] SET [SrcID] = #{srcID}  WHERE [DestID]= #{destID}
+	</update>
+    <select id="getSystemCode" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT SysCode
+		FROM [AppSystem]
+		WHERE AppSystemID = (SELECT SrcID
+							 FROM [ObjRelationship]
+							 WHERE [DestID] = #{workNodeId})
+	</select>
+    <select id="getHostIP" parameterType="map" resultType="java.lang.String">
+		SELECT [DefaultValue] FROM [SysParameter] WHERE [Name]='logstash' AND [TypeID] = #{systemID}
+	</select>
+    <select id="getInfoByMenuId" parameterType="map" resultType="map">
+		SELECT [menuid]
+      ,[slug]
+      ,[title]
+  	  FROM [dashbord] WHERE [menuid]=#{menuid}
+	</select>
+    <insert id="addInfo" parameterType="map">
+		INSERT  INTO [dashbord]([id]
+      ,[menuid]
+      ,[slug]
+      ,[title]) VALUES (#{id},#{menuid},#{slug},#{title})
+	</insert>
+    <select id="getInfoBySlug" parameterType="map" resultType="map">
+		SELECT [id]
+      ,[menuid]
+      ,[slug]
+      ,[title]
+      FROM [dashbord] WHERE [slug]=#{slug}
+	</select>
+    <update id="updateInfo" parameterType="map">
+		UPDATE [dashbord] SET [menuid]=#{menuid}
+      ,[slug]=#{slug}
+      ,[title]=#{title}
+  		WHERE [id]=#{id}
+	</update>
+    <select id="getResourceGroupID" parameterType="long" resultType="string">
+		select distinct [ResourceGroupID]
+		from [ResourcePermission]
+		where [RoleID]	in( select RoleID from [Authorize] Where OrganizationID=#{userId} )
+	</select>
+    <select id="getSystemCodeByName" parameterType="string" resultType="string">
+		SELECT SysCode from AppSystem WHERE AppSystemName=#{name}
+	</select>
+</mapper>

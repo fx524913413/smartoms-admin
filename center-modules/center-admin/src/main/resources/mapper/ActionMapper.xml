@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.ActionMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Action">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="actionID" jdbcType="BIGINT" property="actionID"/>
+        <result column="actionName" jdbcType="VARCHAR" property="actionName"/>
+        <result column="productID" jdbcType="INTEGER" property="productID"/>
+        <result column="actionGroupID" jdbcType="BIGINT" property="actionGroupID"/>
+        <result column="actionCode" jdbcType="VARCHAR" property="actionCode"/>
+    </resultMap>
+
+    <update id="updateByActionID" parameterType="com.zorkdata.center.admin.entity.Action">
+        UPDATE `Action`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="actionName!=null">
+                actionName=#{ActionName},
+            </if>
+            <if test="productID!=null">
+                productID=#{productID},
+            </if>
+            <if test="actionGroupID!=null">
+                actionGroupID=#{actionGroupID},
+            </if>
+            <if test="actionCode!=null">
+                actionCode=#{actionCode},
+            </if>
+        </trim>
+        WHERE actionID=#{actionID}
+    </update>
+
+    <delete id="deleteActionByIds">
+        DELETE FROM `Action` WHERE actionID IN
+        <foreach collection="actionIds" index="index" item="actionID" open="(" close=")" separator=",">
+            #{actionID}
+        </foreach>
+    </delete>
+
+    <select id="getActionByResourceID" resultType="com.zorkdata.center.admin.entity.Action">
+        SELECT actionID,actionName,productID FROM `Action` WHERE actionID IN
+        <foreach collection="actionIds" index="index" item="actionID" open="(" close=")" separator=",">
+            #{actionID}
+        </foreach>
+    </select>
+
+    <select id="getActionByProductID" resultType="com.zorkdata.center.admin.entity.Action">
+        SELECT actionID,actionName,productID,actionGroupID,actionCode FROM `Action` WHERE  productID=#{productID} or ProductID is null
+    </select>
+
+    <select id="getActionIDByActionCode" resultType="java.lang.Long">
+        select actionID from `Action` where actionCode=#{actionCode}
+    </select>
+
+    <select id="getActionGroup" resultType="com.zorkdata.center.admin.entity.ActionGroup">
+        select actionGroupID,groupName,productID from `ActionGroup` where productID=#{productID}
+    </select>
+
+    <insert id="addActionGroup" parameterType="com.zorkdata.center.admin.entity.ActionGroup">
+        insert into `ActionGroup` (actionGroupID,groupName,productID) values (#{actionGroupID},#{groupName},#{productID})
+    </insert>
+
+    <update id="updateActionGroup" parameterType="com.zorkdata.center.admin.entity.ActionGroup">
+        UPDATE `ActionGroup`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="groupName!=null">
+                groupName=#{groupName},
+            </if>
+            <if test="productID!=null">
+                productID=#{productID},
+            </if>
+        </trim>
+        WHERE actionGroupID=#{actionGroupID}
+    </update>
+
+    <delete id="deleteActionGroup" parameterType="java.lang.Long">
+        delete from `ActionGroup` where actionGroupID=#{actionGroupID}
+    </delete>
+</mapper>

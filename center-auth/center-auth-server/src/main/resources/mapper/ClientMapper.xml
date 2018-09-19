@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zorkdata.center.auth.mapper.ClientMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.auth.entity.Client">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="Code" property="code" jdbcType="VARCHAR"/>
+        <result column="Secret" property="secret" jdbcType="VARCHAR"/>
+        <result column="Name" property="name" jdbcType="VARCHAR"/>
+        <result column="Locked" property="locked" jdbcType="CHAR"/>
+        <result column="Description" property="description" jdbcType="VARCHAR"/>
+        <result column="CrtTime" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="CrtUser" property="crtUser" jdbcType="VARCHAR"/>
+        <result column="CrtName" property="crtName" jdbcType="VARCHAR"/>
+        <result column="CrtHost" property="crtHost" jdbcType="VARCHAR"/>
+        <result column="UpdTime" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="UpdUser" property="updUser" jdbcType="VARCHAR"/>
+        <result column="UpdName" property="updName" jdbcType="VARCHAR"/>
+        <result column="UpdHost" property="updHost" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectAllowedClient" resultType="java.lang.String">
+        SELECT
+        client.CODE
+        FROM
+        AuthClient client
+        INNER JOIN auth_client_service gcs ON gcs.client_id = client.id
+        WHERE
+        gcs.service_id = #{serviceId}
+    </select>
+
+    <select id="selectAuthorityServiceInfo" resultMap="BaseResultMap">
+        SELECT
+        client.*
+        FROM
+        AuthClient client
+        INNER JOIN auth_client_service gcs ON gcs.service_id = client.id
+        WHERE
+        gcs.client_id = #{clientId}
+    </select>
+</mapper>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.PermissionMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Permission">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="PermissionID" jdbcType="INTEGER" property="permissionID"/>
+        <result column="PermissionName" jdbcType="VARCHAR" property="permissionName"/>
+        <result column="SourceType" jdbcType="VARCHAR" property="sourceType"/>
+        <result column="SourceID" jdbcType="VARCHAR" property="sourceID"/>
+        <result column="Resource" jdbcType="VARCHAR" property="resource"/>
+        <result column="ResourceID" jdbcType="VARCHAR" property="resourceID"/>
+        <result column="Chmod" jdbcType="VARCHAR" property="chmod"/>
+    </resultMap>
+
+    <sql id="PermissionColumns">
+        PermissionID,PermissionName,SourceType,SourceID,Resource,ResourceID,Chmod
+    </sql>
+
+    <select id="getResourceAndResourceID" resultType="com.zorkdata.center.admin.entity.Permission">
+        SELECT Resource,ResourceID FROM `Permission` WHERE `Type`='resource' AND SourceType=#{source} AND SourceID IN
+        <foreach collection="sourceIds" index="index" item="sourceID" open="(" close=")" separator=",">
+            #{sourceID}
+        </foreach>
+        <if test="resource!=null">
+            AND Resource=#{resource}
+        </if>
+    </select>
+
+    <select id="getResourceByResourceID" resultType="com.zorkdata.center.admin.entity.SuperEntity">
+        <choose>
+            <when test="resourceName=='menu'">
+                SELECT menuID,menuName,parentID,URL,sort,code,createTime,comment,productID FROM `Menu` WHERE menuID IN
+                <foreach collection="resourceIds" index="index" item="menuID" open="(" close=")" separator=",">
+                    #{menuID}
+                </foreach>
+            </when>
+            <when test="resourceName=='computer'">
+                SELECT c.ComputerID,c.ComputerType,c.HostName,c.IP,c.Mac,a.AgentID,a.AgentName,a.State FROM `Computer`
+                as c LEFT JOIN
+                `Agent` AS a on c.ComputerID = a.ComputerID WHERE c.ComputerID in
+                <foreach collection="resourceIds" index="index" item="computerID" open="(" close=")" separator=",">
+                    #{computerID}
+                </foreach>
+            </when>
+            <when test="resourceName=='tag'">
+                SELECT id,tagName,comment,productID FROM `Tag` WHERE id IN
+                <foreach collection="resourceIds" index="index" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </when>
+            <when test="resourceName=='action'">
+                SELECT actionID,actionName,productID,actionGroupID,actionCode FROM `Action` WHERE actionID IN
+                <foreach collection="resourceIds" index="index" item="actionID" open="(" close=")" separator=",">
+                    #{actionID}
+                </foreach>
+            </when>
+        </choose>
+    </select>
+
+    <delete id="deletePermissionByIds">
+        DELETE FROM `Permission` WHERE Resource=#{resource} AND SourceID=#{sourceID} AND SourceType=#{sourceType} AND
+        ResourceID IN
+        <foreach collection="deleteIds" index="index" item="resourceID" open="(" close=")" separator=",">
+            #{resourceID}
+        </foreach>
+    </delete>
+
+    <select id="getResourceID" resultType="java.lang.Long">
+        SELECT ResourceID FROM `Permission` WHERE SourceType=#{source} AND Resource=#{resource} AND SourceID IN
+        <foreach collection="sourceIds" index="index" item="sourceID" open="(" close=")" separator=",">
+            #{sourceID}
+        </foreach>
+    </select>
+
+    <select id="getPermissionBySource" resultType="com.zorkdata.center.admin.entity.Permission">
+        SELECT Resource,ResourceID FROM `Permission` WHERE SourceType=#{source} AND SourceID IN
+        <foreach collection="sourceIds" index="index" item="sourceID" open="(" close=")" separator=",">
+            #{sourceID}
+        </foreach>
+    </select>
+    <delete id="deleteByResourceIds">
+        delete from Permission where Resource=#{resource} and ResourceID in
+        <foreach collection="resourceIds" index="index" item="resourceID" open="(" close=")" separator=",">
+            #{resourceID}
+        </foreach>
+    </delete>
+
+    <select id="getSourceIDByResourceID" resultType="java.lang.Long">
+        select sourceID from `Permission` where Resource=#{resource} and ResourceID=#{resourceID} and sourceType=#{sourceType}
+    </select>
+
+    <delete id="deleteBySourceIds">
+        delete from Permission where SourceType=#{sourceType} and SourceID in
+        <foreach collection="sourceIds" index="index" item="sourceID" open="(" close=")" separator=",">
+            #{sourceID}
+        </foreach>
+    </delete>
+</mapper>

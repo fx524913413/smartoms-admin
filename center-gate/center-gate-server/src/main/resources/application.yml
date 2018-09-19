@@ -1,0 +1,118 @@
+spring:
+    application:
+        name: center-gate
+    thymeleaf:
+        mode: LEGACYHTML5
+        cache: false
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: GMT+8
+        default-property-inclusion: non_null
+    redis:
+        database: 1
+        host: ${REDIS_HOST:192.168.1.95}
+        port: ${REDIS_PORT:6379}
+#        password: ${REDIS_PASSWORD:zorkdata.8888}
+        jedis:
+          pool:
+              max-active: 20
+#    rabbitmq:
+#        host: ${RABBIT_MQ_HOST:localhost}
+#        port:  ${RABBIT_MQ_PORT:5672}
+#        username: guest
+#        password: guest
+#    sleuth:
+#      enabled: true
+#      http:
+#        legacy:
+#          enabled: true
+server:
+    port: 8765 #启动端口
+
+
+#
+zuul:
+  ignored-services: "*"
+  sensitive-headers:
+  prefix: /api #为zuul设置一个公共的前缀
+  ratelimit: # 网关限流
+    key-prefix: gate_rate
+    enabled: true
+    repository: REDIS #REDIS, JPA, IN_MEMORY
+    behind-proxy: true
+    default-policy: #optional - will apply unless specific policy exists
+      limit: 200
+      refresh-interval: 60 #default value (in seconds)
+      type: #optional
+        - user
+        - origin
+        - url
+  routes:
+    back:
+      path: /admin/**
+      serviceId: center-admin
+
+    auth:
+      path: /auth/**
+      serviceId: center-auth
+
+ribbon:
+  eureka:
+    enabled: true
+  ReadTimeout: 30000
+  ConnectTimeout: 30000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+  OkToRetryOnAllOperations: false
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+
+
+hystrix:
+  threadpool:
+    default:
+      coreSize: 1000 ##并发执行的最大线程数，默认10
+      maxQueueSize: 1000 ##BlockingQueue的最大队列数
+      queueSizeRejectionThreshold: 500 ##即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 120000
+          strategy: SEMAPHORE
+
+
+gate:
+  ignore:
+    startWith: /static,/auth/jwt,/admin/agent/getAgents,/admin/cmd/asyncExecCode,/admin/agent/getAgentNameByCiCode,/admin/file/sendfile,/admin/file/fileUpload,/admin/agent/getCiCodeByAgentName,/admin/file/download/,/admin/file/fileUpload,/admin/beatservice,/admin/file,/admin/agent/getAllAgent
+
+
+auth:
+  serviceId: center-auth
+  user:
+    token-header: Authorization
+  client:
+    token-header: x-client-token
+    id: center-gate  #不填则默认读取spring.application.name
+    secret: 123456
+
+
+#redis-cache 相关
+redis:
+    pool:
+         maxActive: 300
+         maxIdle: 100
+         maxWait: 1000
+    host: 192.168.1.95
+    port: 6379
+    password:
+    timeout: 2000
+    sysName: center-admin
+    enable: true
+    database: 0
+
+token:
+    expire: 1800

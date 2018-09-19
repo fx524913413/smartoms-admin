@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.ClusterComputerRelationMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.ClusterComputerRelation">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="ClusterID" jdbcType="BIGINT" property="clusterID"/>
+        <result column="ComputerID" jdbcType="BIGINT" property="computerID"/>
+    </resultMap>
+
+    <delete id="deleteByclusterID" parameterType="java.lang.Long">
+        DELETE FROM ClusterComputerRelation
+        WHERE clusterID = #{clusterID}
+    </delete>
+
+    <insert id="insertBatch" parameterType="com.zorkdata.center.admin.entity.ClusterComputerRelation">
+        INSERT INTO ClusterComputerRelation (ClusterID,ComputerID)
+        VALUES(#{clusterID},#{computerID})
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+            <if test="clusterID!=null">
+                clusterID=#{clusterID} ,
+            </if>
+            <if test="computerID!=null">
+                computerID=#{computerID} ,
+            </if>
+        </trim>
+    </insert>
+
+</mapper>

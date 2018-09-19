@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.ComputerMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Computer">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="ComputerID" jdbcType="BIGINT" property="computerID"/>
+        <result column="ComputerType" jdbcType="VARCHAR" property="computerType"/>
+        <result column="HostName" jdbcType="VARCHAR" property="hostName"/>
+        <result column="IP" jdbcType="VARCHAR" property="ip"/>
+        <result column="Mac" jdbcType="VARCHAR" property="mac"/>
+        <result column="UserName" jdbcType="VARCHAR" property="userName"/>
+        <result column="Password" jdbcType="VARCHAR" property="password"/>
+        <result column="LastModifyTime" jdbcType="DATE" property="lastModifyTime"/>
+        <result column="CiCode" jdbcType="VARCHAR" property ="ciCode"/>
+    </resultMap>
+
+    <resultMap id="ComputerTagVoMap" type="com.zorkdata.center.admin.vo.ComputerTagVo">
+        <id column="ComputerID" jdbcType="BIGINT" property="computerID"/>
+        <result column="HostName" jdbcType="VARCHAR" property="hostName"/>
+        <result column="IP" jdbcType="VARCHAR" property="ip"/>
+        <result column="Mac" jdbcType="VARCHAR" property="mac"/>
+        <result column="LastModifyTime" jdbcType="DATE" property="lastModifyTime"/>
+        <collection property="tags" ofType="com.zorkdata.center.admin.entity.Tag">
+            <id column="id" jdbcType="BIGINT" property="id"/>
+            <result column="tagName" jdbcType="VARCHAR" property="tagName"/>
+        </collection>
+    </resultMap>
+    <sql id="ComputerColumns">
+        ComputerID,ComputerType,HostName,IP,Mac,UserName,Password,LastModifyTime
+    </sql>
+
+    <select id="getComputerByAgentID" resultType="com.zorkdata.center.admin.entity.Computer">
+        select
+        <include refid="ComputerColumns"/>
+        FROM `Computer` where ComputerID in (select ComputerID from Agent where AgentID=#{agentID} )
+    </select>
+
+    <select id="getComputerAgentInfo" resultType="com.zorkdata.center.admin.vo.WorkerNode">
+        select
+            `Computer`.IP ip,`Agent`.AgentID workerNodeId,`Agent`.AgentName workerNodeName,`Agent`.State state,`Computer`.ComputerType type
+        FROM `Computer`,`Agent` where `Computer`.ComputerID =`Agent`.ComputerID
+    </select>
+
+    <select id="getComputerByResourceID" resultType="com.zorkdata.center.admin.entity.Computer">
+        SELECT
+        <include refid="ComputerColumns"/>
+        FROM `Computer` where ComputerID IN
+        <foreach collection="resourceIds" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+        ORDER BY LastModifyTime DESC
+    </select>
+    <select id="getComputerByComputerIP" parameterType="java.lang.String"
+            resultType="com.zorkdata.center.admin.entity.Computer">
+        SELECT * FROM Computer
+        WHERE  FIND_IN_SET(#{computerIP}, IP)
+    </select>
+    <select id="selectAllComputer" resultType="com.zorkdata.center.admin.entity.Computer">
+        SELECT * FROM Computer
+        ORDER BY LastModifyTime DESC
+    </select>
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM Computer
+        WHERE computerID = #{computerID}
+    </delete>
+
+    <update id="updateSelectiveById" parameterType="com.zorkdata.center.admin.entity.Computer">
+        update Computer
+        <set>
+            <if test="computerType!=null and computerType!='' ">
+                computerType = #{computerType},
+            </if>
+            <if test="hostName!=null and hostName!='' ">
+                hostName = #{hostName},
+            </if>
+            <if test="ip!=null and ip!='' ">
+                ip = #{ip},
+            </if>
+            <if test="mac!=null and mac!='' ">
+                mac = #{mac},
+            </if>
+            <if test="userName!=null and userName!='' ">
+                userName = #{userName},
+            </if>
+            <if test="password!=null and password!='' ">
+                password = #{password},
+            </if>
+            <if test="lastModifyTime!=null ">
+                lastModifyTime = #{lastModifyTime},
+            </if>
+        </set>
+        where computerID = #{computerID}
+    </update>
+
+    <delete id="deleteByIds">
+        DELETE FROM Computer WHERE ComputerID IN
+        <foreach collection="computerIDlist" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+    </delete>
+    <insert id="insertComputer" parameterType="com.zorkdata.center.admin.entity.Computer" useGeneratedKeys="true"
+            keyProperty="computerID">
+        INSERT INTO Computer (computerType,hostName,ip,mac,userName,password,lastModifyTime,ciCode)
+        VALUES (#{computerType},#{hostName},#{ip},#{mac},#{userName},#{password},#{lastModifyTime},#{ciCode})
+    </insert>
+
+    <select id="selectAllComputerAndAgent" resultType="com.zorkdata.center.admin.vo.ComputerVo">
+        SELECT c.ComputerID,c.ComputerType,c.HostName,c.IP,c.Mac,c.LastModifyTime,a.AgentID,a.AgentName,a.State FROM
+        `Computer` as c LEFT JOIN
+        `Agent` AS a on c.ComputerID = a.ComputerID
+        ORDER BY LastModifyTime DESC
+    </select>
+
+    <select id="getComputerAndAgentByResourceID" resultType="com.zorkdata.center.admin.vo.ComputerVo">
+        SELECT c.ComputerID,c.ComputerType,c.HostName,c.IP,c.Mac,c.LastModifyTime,a.AgentID,a.AgentName,a.State FROM
+        `Computer` as c LEFT JOIN
+        `Agent` AS a on c.ComputerID = a.ComputerID WHERE c.ComputerID in
+        <foreach collection="computerIds" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+        ORDER BY LastModifyTime DESC
+    </select>
+
+    <select id="getComputerAndTag" resultMap="ComputerTagVoMap">
+        select c.ComputerID,c.HostName,c.IP,c.Mac,c.LastModifyTime,tr.TagID as id,t.TagName from `Computer` as c,`Tag`
+        as t,`TagResourceRelation` as tr
+        where c.ComputerID=tr.ResourceID and tr.ResourceType='computer' and tr.TagID=t.id and c.ComputerID in
+        <foreach collection="computerIds" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+    </select>
+
+    <select id="getAllComputerAndTag" resultMap="ComputerTagVoMap">
+        select c.ComputerID,c.HostName,c.IP,c.Mac,c.LastModifyTime,tr.TagID as id,t.TagName from `Computer` as c,`Tag` as t,`TagResourceRelation` as tr
+        where c.ComputerID=tr.ResourceID and tr.ResourceType='computer' and tr.TagID=t.id
+    </select>
+
+    <insert id="insertBatch" parameterType="com.zorkdata.center.admin.entity.Computer">
+        INSERT INTO Computer (computerType,hostName,ip,mac,userName,password,lastModifyTime,ciCode)
+        VALUES(#{computerType},#{hostName},#{ip},#{mac},#{userName},#{password},#{lastModifyTime},#{ciCode})
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffixOverrides=",">
+            <if test="computerType!=null">
+                computerType=#{computerType} ,
+            </if>
+            <if test="hostName!=null">
+                hostName=#{hostName} ,
+            </if>
+            <if test="ip!=null">
+                ip=#{ip} ,
+            </if>
+        </trim>
+    </insert>
+
+    <select id="getComputersByIps" resultType="com.zorkdata.center.admin.entity.Computer">
+        SELECT * FROM Computer
+        <trim prefix="WHERE" suffixOverrides=" OR ">
+            <foreach collection="ips" index="index" item="ip">
+                <if test="ip!=null">
+                    FIND_IN_SET(#{ip}, IP) OR
+                </if>
+            </foreach>
+        </trim>
+    </select>
+
+    <update id="updateComputerCiCodeBatch">
+        update `Computer` set CiCode=#{ciCode} where ComputerID =#{computerID}
+    </update>
+
+    <select id="getComputersSortByProductCode" parameterType="java.lang.String" resultMap="ComputersSortByProductCode">
+    select com.ComputerID,com.ComputerType,com.HostName,com.IP,com.Mac,com.UserName,com.Password,com.LastModifyTime,com.CiCode,com.tagName,com.ProductID from
+		(SELECT * FROM
+		(select c.ComputerID,c.ComputerType,c.HostName,c.IP,c.Mac,c.UserName,c.Password,c.LastModifyTime,c.CiCode,TR.TagID from Computer as c LEFT JOIN TagResourceRelation as TR ON TR.ResourceType = "computer" and c.ComputerID=TR.ResourceID) as cr
+		LEFT JOIN Tag ON cr.TagID=Tag.id) as com
+		where com.productID = (select p.ProductID FROM Product p where p.Code = #{productCode})
+    </select>
+
+    <resultMap id="ComputersSortByProductCode" type="com.zorkdata.center.admin.vo.ComputersSortByProductCode">
+        <id column="ComputerID" jdbcType="BIGINT" property="computerID"/>
+        <result column="ComputerType" jdbcType="VARCHAR" property="computerType"/>
+        <result column="HostName" jdbcType="VARCHAR" property="hostName"/>
+        <result column="IP" jdbcType="VARCHAR" property="ip"/>
+        <result column="Mac" jdbcType="VARCHAR" property="mac"/>
+        <result column="UserName" jdbcType="VARCHAR" property="userName"/>
+        <result column="Password" jdbcType="VARCHAR" property="password"/>
+        <result column="LastModifyTime" jdbcType="DATE" property="lastModifyTime"/>
+        <result column="CiCode" jdbcType="VARCHAR" property ="ciCode"/>
+        <result column="tagName" jdbcType="VARCHAR" property ="tagName"/>
+        <result column="productID" jdbcType="BIGINT" property ="productID"/>
+    </resultMap>
+
+</mapper>

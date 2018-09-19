@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.MasterMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Master">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="MasterID" jdbcType="BIGINT" property="masterID"/>
+        <result column="ClusterID" jdbcType="BIGINT" property="clusterID"/>
+        <result column="ComputerID" jdbcType="BIGINT" property="computerID"/>
+        <result column="Port" jdbcType="BIGINT" property="port"/>
+        <result column="State" jdbcType="BIGINT" property="state"/>
+        <result column="InstallationType" jdbcType="VARCHAR" property="installationType"/>
+        <result column="LastModifyTime" jdbcType="DATE" property="lastModifyTime"/>
+        <result column="IsMaster" jdbcType="BIGINT" property="isMaster"/>
+        <result column="ApiPort" jdbcType="BIGINT" property="apiPort"/>
+    </resultMap>
+
+    <select id="selectAll" resultType="com.zorkdata.center.admin.entity.Master">
+        SELECT * FROM Master where Master.ComputerID IS NOT NULL
+    </select>
+    <delete id="deleteByComputerID" parameterType="java.lang.Long">
+        DELETE FROM Master
+        WHERE computerID = #{computerID}
+    </delete>
+    <select id="selectByComputerID" parameterType="java.lang.Long" resultType="com.zorkdata.center.admin.entity.Master">
+        SELECT * FROM Master
+        WHERE computerID = #{computerID}
+    </select>
+
+    <select id="selectByComputerIP" parameterType="java.lang.String"
+            resultType="com.zorkdata.center.admin.entity.Master">
+        SELECT * FROM Master
+        WHERE computerID in (SELECT ComputerID FROM Computer WHERE  FIND_IN_SET(#{computerIP}, IP))
+    </select>
+    <select id="getApiInfo" resultType="map">
+        SELECT m.MasterID,c.IP,m.ApiPort,c.HostName,m.ClusterID,c.ComputerID,m.InstallationType,c.ComputerType,m.State
+        FROM `Master` as m ,Computer as c
+        WHERE m.ComputerID = c.ComputerID
+    </select>
+    <insert id="insertMaster" parameterType="com.zorkdata.center.admin.entity.Master" useGeneratedKeys="true"
+            keyProperty="masterID">
+        INSERT INTO Master (computerID,port,clusterID,state,lastModifyTime,installationType,isMaster,apiPort)
+        VALUES (#{computerID},#{port},#{clusterID},#{state},#{lastModifyTime},#{installationType},#{isMaster},#{apiPort})
+    </insert>
+    <delete id="deleteByComputerIds">
+        DELETE FROM Master WHERE ComputerID IN
+        <foreach collection="computerIDlist" index="index" item="computerID" open="(" close=")" separator=",">
+            #{computerID}
+        </foreach>
+    </delete>
+    <update id="updateMaster" parameterType="map">
+        update Master set state = #{state},lastModifyTime = #{lastModifyTime} where masterID = #{masterID}
+    </update>
+    <update id="updateMasterbyIP" parameterType="map">
+        update Master set state = #{state} where ComputerID in (SELECT ComputerID FROM Computer WHERE  FIND_IN_SET(#{computerIP}, IP))
+    </update>
+
+    <select id="getMasterVo2" parameterType="java.lang.Long" resultMap="resultMap4MasterVo2">
+        SELECT m.InstallationType,m.MasterID,m.ClusterID MasterClusterID,m.ComputerID,m.State,m.Port,m.IsMaster,m.ApiPort,m.LastModifyTime mLastModifyTime,cl.ClusterName,cl.ClusterID
+			FROM `Master` m
+			LEFT JOIN Cluster cl
+			ON m.ClusterID = cl.ClusterID
+    </select>
+
+    <resultMap id="resultMap4MasterVo2" type="com.zorkdata.center.admin.vo.MasterVo2">
+        <association property="cluster" resultMap="reflectCluster"/>
+        <association property="master" resultMap="reflectMaster"/>
+        <association property="computer" resultMap="reflectComputer"/>
+    </resultMap>
+
+    <resultMap id="reflectCluster" type="com.zorkdata.center.admin.entity.Cluster">
+        <result property="clusterID" column="ClusterID"/>
+        <result property="clusterName" column="ClusterName"/>
+    </resultMap>
+
+    <resultMap id="reflectMaster" type="com.zorkdata.center.admin.entity.Master">
+        <result column="MasterID" property="masterID"/>
+        <result column="MasterClusterID" property="clusterID"/>
+        <result column="ComputerID" property="computerID"/>
+        <result column="Port" property="port"/>
+        <result column="State" property="state"/>
+        <result column="InstallationType" property="installationType"/>
+        <result column="mLastModifyTime" property="lastModifyTime"/>
+        <result column="IsMaster" property="isMaster"/>
+        <result column="ApiPort" property="apiPort"/>
+    </resultMap>
+
+    <resultMap id="reflectComputer" type="com.zorkdata.center.admin.entity.Computer">
+        <result column="ComputerID" jdbcType="BIGINT" property="computerID"/>
+        <result column="ComputerType" jdbcType="VARCHAR" property="computerType"/>
+        <result column="HostName" jdbcType="VARCHAR" property="hostName"/>
+        <result column="IP" jdbcType="VARCHAR" property="ip"/>
+        <result column="Mac" jdbcType="VARCHAR" property="mac"/>
+        <result column="UserName" jdbcType="VARCHAR" property="userName"/>
+        <result column="Password" jdbcType="VARCHAR" property="password"/>
+        <result column="LastModifyTime" jdbcType="DATE" property="lastModifyTime"/>
+    </resultMap>
+
+    <select id="getMasterComputerByClusterID" parameterType="java.lang.Long" resultType="com.zorkdata.center.admin.entity.Computer">
+        select * from Computer as c where c.ComputerID IN  (select m.ComputerID from `Master` as m WHERE m.ClusterID = #{clusterID})
+    </select>
+
+    <select id="getMasterIPAndOstypeByAgentName" resultType="com.zorkdata.center.admin.vo.MasterInfoVo">
+        SELECT IP as masterIP,ComputerType as masterOstype FROM Computer WHERE ComputerID=
+        (SELECT ComputerID FROM `Master` WHERE MasterID=(SELECT MasterID FROM Agent where agentName=#{agentName}))
+    </select>
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.LicenseMapper">
+    <sql id="LicenseColumns">
+        LicenseID,GroupID,LicenseMessage
+    </sql>
+
+    <insert id="insertSelectiveGetId" parameterType="com.zorkdata.center.admin.entity.License" keyProperty="licenseID"
+            useGeneratedKeys="true">
+        INSERT INTO License(GroupID,LicenseMessage)
+        VALUES (#{groupID},#{licenseMessage})
+    </insert>
+    <update id="updateByGroupId" parameterType="com.zorkdata.center.admin.entity.License">
+        UPDATE `License`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="licenseMessage!=null">
+                LicenseMessage=#{licenseMessage},
+            </if>
+        </trim>
+        WHERE GroupID=#{groupID}
+    </update>
+
+    <select id="getLicenseById" parameterType="java.lang.Long" resultType="com.zorkdata.center.admin.entity.License">
+        select
+        <include refid="LicenseColumns"/>
+        from `License` where GroupID =#{groupID}
+    </select>
+
+    <delete id="deleteLicenseByLicenseId" parameterType="com.zorkdata.center.admin.entity.License">
+        DELETE FROM `License`  WHERE LicenseID=#{licenseID}
+    </delete>
+
+    <select id="getAllLicense" resultType="com.zorkdata.center.admin.entity.License">
+        select LicenseID,a.GroupID,LicenseMessage,GroupName from `License` a,`Group` b where a.GroupID=b.GroupID
+    </select>
+
+    <delete id="deleteLicenseByLicenseIds">
+        DELETE FROM License WHERE LicenseID IN
+        <foreach collection="licenseIDlist" index="index" item="licenseID" open="(" close=")" separator=",">
+            #{licenseID}
+        </foreach>
+    </delete>
+
+    <select id="getAllGroupIDs" resultType="com.zorkdata.center.admin.entity.Group">
+        select GroupID,GroupName from `Group` a WHERE a.ParentID='1' AND NOT EXISTS (SELECT *FROM License b WHERE a.GroupID=b.GroupId)
+    </select>
+</mapper>

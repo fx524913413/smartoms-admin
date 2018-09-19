@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.center.admin.mapper.ProductMapper">
+    <resultMap id="BaseResultMap" type="com.zorkdata.center.admin.entity.Product">
+        <!--
+          WARNING - @mbggenerated
+        -->
+        <id column="ProductID" jdbcType="INTEGER" property="productID"/>
+        <result column="ProductName" jdbcType="VARCHAR" property="productName"/>
+        <result column="Sort" jdbcType="INTEGER" property="sort"/>
+        <result column="Code" jdbcType="VARCHAR" property="code"/>
+        <result column="Icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="Ower" jdbcType="INTEGER" property="ower"/>
+        <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+    </resultMap>
+
+    <resultMap id="productInfoMap" type="com.zorkdata.center.admin.vo.ProductInfo">
+        <id column="ProductID" jdbcType="INTEGER" property="id"/>
+        <result column="ProductName" jdbcType="VARCHAR" property="name"/>
+        <result column="Sort" jdbcType="INTEGER" property="sort"/>
+        <result column="Code" jdbcType="VARCHAR" property="code"/>
+        <result column="Icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="Ower" jdbcType="INTEGER" property="ower"/>
+        <result column="CreateTime" jdbcType="TIME" property="createTime"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+    </resultMap>
+    <sql id="ProductColumns">
+        ProductID,ProductName,Sort,Code,Icon,Ower,CreateTime,url
+    </sql>
+
+    <update id="updateByProductId" parameterType="com.zorkdata.center.admin.entity.Product">
+        UPDATE `Product`
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productName!=null">
+                ProductName=#{productName},
+            </if>
+            <if test="sort!=null">
+                Sort=#{sort},
+            </if>
+            <if test="code!=null">
+                Code=#{code},
+            </if>
+            <if test="icon!=null">
+                Icon=#{icon},
+            </if>
+            <if test="ower!=null">
+                Ower=#{ower},
+            </if>
+            <if test="createTime!=null">
+                CreateTime=#{createTime},
+            </if>
+            <if test="url!=null">
+                url=#{url},
+            </if>
+        </trim>
+        WHERE ProductID=#{productID}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM `Product` WHERE ProductID=#{productID}
+    </delete>
+
+    <select id="getProductByOwnerID" resultType="com.zorkdata.center.admin.entity.Product">
+        select
+        <include refid="ProductColumns"/>
+        from `Product` where Ower=#{ower}
+    </select>
+
+    <select id="getProductBySuperAdminID" resultType="com.zorkdata.center.admin.entity.Product">
+        select
+        <include refid="ProductColumns"/>
+        from `Product` where Ower=#{ower} and Code='ControlCenter'
+    </select>
+
+    <select id="selectAllProduct" resultType="com.zorkdata.center.admin.vo.ProductVo">
+        select p.ProductID,p.ProductName,p.Sort,p.Code,p.Icon,p.Ower,p.CreateTime,u.TrueName as owerName from `Product`as p,`User` as u where p.Ower=u.UserID
+    </select>
+
+    <select id="getOwerIds" resultType="java.lang.Long">
+        select Ower from `Product`
+    </select>
+
+    <select id="getProductIDByProductCode" resultType="java.lang.Integer">
+        select ProductID from `Product` where Code=#{productCode}
+    </select>
+
+    <select id="getBkurl" resultType="java.lang.String">
+        select url from `Product` where Code=#{productCode}
+    </select>
+</mapper>

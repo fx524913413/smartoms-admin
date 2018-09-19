@@ -1,0 +1,60 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zorkdata.datasynchro.mapper.AppProgramMapper">
+    <select id="getAppProgramInfo"  resultMap="appSystemVoMap" >
+        select s.AppSystemName,s.AppSystemID,s.SysCode, p.*, c.Type,c.Memo
+        from AppSystem s, AppProgram p, Computer c,
+        (select SrcID,DestID from ObjRelationship where SrcType='AppSystem') r
+        where s.AppSystemID=r.SrcID and p.AppProgramID=r.DestID and c.ComputerID=p.ComputerID
+        order by p.AppProgramName, p.HostName
+	</select>
+
+    <select id="getUserAppSystem" resultType="com.zorkdata.datasynchro.vo.UserAppSystem">
+        select  RIGHT(m.CommandText,LEN(m.CommandText)-CHARINDEX('/',m.CommandText)) appSystemId,m.ActionID,userAction.userName
+         from MenuItem m ,
+            (select ap.ActionID,u.userName from [user] u, Authorize ur, ActionPermission ap
+            where u.UserID = ur.OrganizationID and ur.RoleID = ap.RoleID ) userAction
+		 where m.ActionID = userAction.ActionID  and m.CommandText LIKE 'page-system%'
+    </select>
+
+    <select id="getBizToModule" resultMap="bizToModuleMap">
+        select s.AppSystemID,s.AppSystemName,s.SysCode, p.ClusterName,p.AppProgramName from AppSystem s
+            left JOIN(select SrcID,DestID from ObjRelationship where SrcType='AppSystem') r
+            on s.AppSystemID=r.SrcID
+            left JOIN AppProgram p
+            on  p.AppProgramID=r.DestID
+    </select>
+    <resultMap id="appSystemVoMap" type="com.zorkdata.datasynchro.vo.AppSystemVo">
+        <result property="appSystemId" column="AppSystemID"/>
+        <result property="appSystemName" column="AppSystemName"/>
+        <result property="sysCode" column="SysCode"/>
+        <collection property="sets" ofType="com.zorkdata.datasynchro.vo.SetVo">
+            <result property="setId" column="clusterInstanceId"/>
+            <result property="setName" column="clusterName"/>
+            <collection property="modules" ofType="com.zorkdata.datasynchro.vo.ModuleVo">
+                <result property="moduleId" column="appProgramId"/>
+                <result property="moduleName" column="appProgramName"/>
+                <collection property="computers" ofType="com.zorkdata.datasynchro.vo.ComputerVo">
+                    <result property="IPAddress" column="IPAddress"/>
+                    <result property="hostName" column="hostName"/>
+                    <result property="code" column="code"/>
+                    <result property="osType" column="osType"/>
+                    <result property="computerId" column="computerId"/>
+                </collection>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <resultMap id="bizToModuleMap" type="com.zorkdata.datasynchro.vo.AppSystemVo">
+        <result property="appSystemId" column="AppSystemId"/>
+        <result property="appSystemName" column="AppSystemName"/>
+        <result property="sysCode" column="SysCode"/>
+        <collection property="sets" ofType="com.zorkdata.datasynchro.vo.SetVo">
+            <result property="setName" column="clusterName"/>
+            <collection property="modules" ofType="com.zorkdata.datasynchro.vo.ModuleVo">
+                <result property="moduleName" column="appProgramName"/>
+            </collection>
+        </collection>
+    </resultMap>
+</mapper>
